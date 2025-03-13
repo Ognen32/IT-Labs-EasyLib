@@ -1,18 +1,19 @@
-import express, { json } from 'express';
-import bodyParser from 'body-parser';
-import {dirname} from 'path';
-import { fileURLToPath } from 'url';
+const express = require('express');
+const bodyParser = require('body-parser');
+const userRoutes = require('./routes/userRoutes');
+require('dotenv').config();
+require('./config/db'); // Ensure the database connection is established
 
 const app = express();
-const port = 3000;
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
+// Middleware
+app.use(bodyParser.json());
 
+// Routes
+app.use('/api', userRoutes);
 
-
-
-
-
-app.listen(port, () => {
-    console.log(`Server is on ${port}`);
-    });
+// Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+});
