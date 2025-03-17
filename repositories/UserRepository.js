@@ -1,31 +1,25 @@
+import User  from "../models/userModel.js";
 
-const User = require('../models/userModel');
-
-const createUser = async (userData) => {
+export const createUser = async (userData) => {
   return await User.create(userData);
 };
 
-const findAllUsers = async () => {
+export const findAllUsers = async () => {
   return await User.findAll();
 };
 
-const findUserByEmail = async (email) => {
-    console.log(email); 
+export const findByEmail = async (email) => {
   return await User.findOne({ where: { email } });
 };
 
-const updateUser = async (id, userData) => {
+export const findUserById = async (id) => {
+  return await User.findByPk(id, { attributes: ["id", "username", "email"] });
+};
+
+export const updateUser = async (id, userData) => {
   return await User.update(userData, { where: { id } });
 };
 
-const deleteUser = async (id) => {
+export const deleteUser = async (id) => {
   return await User.destroy({ where: { id } });
-};
-
-module.exports = {
-  createUser,
-  findAllUsers,
-  findUserByEmail,
-  updateUser,
-  deleteUser,
 };

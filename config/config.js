@@ -1,8 +1,6 @@
-require('dotenv').config(); // Load environment variables from .env
+import "dotenv/config";
 
-console.log('DB Host:', process.env.DB_HOST);
-
-module.exports = {
+export default {
   development: {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,

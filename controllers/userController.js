@@ -1,25 +1,10 @@
-const userService = require('../services/userService');
+import asyncHandler from "../utils/asyncHandler.js";
+import { getUserById } from "../services/userService.js";
 
-const createUser = async (req, res) => {
-  try {
-    const { username, email, password } = req.body;
-    const newUser = await userService.saveUser({ username, email, password });
-    res.status(201).json({ message: 'User created successfully', user: newUser });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-const getUsers = async (req, res) => {
-  try {
-    const users = await userService.getAllUsers();
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-module.exports = {
-    createUser,
-    getUsers,
-  };
+export const getUserProfile = asyncHandler(async (req, res) => {
+  const user = await getUserById(req.user.id);
+  res.json({
+    message: "User profile retrieved successfully",
+    user,
+  });
+});
