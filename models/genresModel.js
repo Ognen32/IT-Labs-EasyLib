@@ -1,5 +1,6 @@
 import { DataTypes } from 'sequelize'; 
 import { sequelize } from '../database/dbConnect.js';
+// import Book from './bookModel.js';
 
 const Genre = sequelize.define("Genre", {
     genreId: {
@@ -23,6 +24,10 @@ const Genre = sequelize.define("Genre", {
     timestamps: true,
 });
 
-Genre.belongsToMany(Book, { through: 'BookGenres', foreignKey: 'genreId', otherKey: 'bookid' });
+// Genre.belongsToMany(Book, {
+//     through: 'BookGenres', // Join table
+//     foreignKey: 'genreId', // Foreign key for Genre
+//     otherKey: 'bookid', // Foreign key for Book
+//   });
 
 export default Genre;

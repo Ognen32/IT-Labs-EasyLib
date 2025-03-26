@@ -7,6 +7,7 @@ import authRoutes from "./routes/authRoutes.js";
 import bookRoutes from './routes/bookRoutes.js';
 import { connectDB } from "./database/dbConnect.js";
 import bodyParser from 'body-parser';
+import './models/associations.js'; // Ќоке се користи релациони бази мора вака да се направи нов фајл кај шо ќе ги поврзи. еднаш мора да се вчиат па да се напрај relationship
 
 dotenv.config({ path: './config/config.env' });
 

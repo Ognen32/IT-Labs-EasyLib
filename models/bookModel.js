@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize'; // Importing and using datatypes from sequelize
 import { sequelize } from '../database/dbConnect.js';
-import Genre from './genresModel.js'; // Importing the Genre model
+// import Genre from './genresModel.js';
 
 const Book = sequelize.define("Book", {
 
@@ -93,6 +93,10 @@ const Book = sequelize.define("Book", {
     }
 });
 
-Book.belongsToMany(Genre, { through: 'BookGenres', foreignKey: 'bookid', otherKey: 'genreId' });
+// Book.belongsToMany(Genre, {
+//     through: 'BookGenres', // Join table
+//     foreignKey: 'bookid', // Foreign key for Book
+//     otherKey: 'genreId', // Foreign key for Genre
+//   });
 
 export default Book;
