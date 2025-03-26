@@ -1,5 +1,5 @@
 import { verifyToken } from '../utils/jwtToken.js';
-import ErrorHandler from '../middlewares/error.js';
+import {ErrorHandler} from '../middlewares/error.js';
 
 export const isAuthenticated = (req, res, next) => {
   const token = req.cookies.token; // Requests the token form the cookies
