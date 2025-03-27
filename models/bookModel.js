@@ -25,15 +25,24 @@ const Book = sequelize.define("Book", {
         type: DataTypes.STRING(100),
         allowNull: false,
         validate: {
-            len: [3,100],
-            msg: "Author name must be between 3 and 100 characters."
+            len: {
+                args: [3,100],
+                msg: "Author must be between 3 and 100 characters."
+            }
         }
     },
     releaseDate: {
         type: DataTypes.DATE,
         allowNull: false,
         validate: {
-            isDate: "Release date must be a valid date in ISO 8601 format (YYYY-MM-DD)."
+            isDate: {
+                args: true,
+                msg: "Release date must be a valid date in ISO 8601 format (YYYY-MM-DD)."
+            },
+            isBefore: {
+                args: [new Date().toISOString()],
+                msg: "Release date cannot be in the future."
+            }
         }
     },
     publishingHouse: {
@@ -44,18 +53,17 @@ const Book = sequelize.define("Book", {
                 args: [3,50],
                 msg: "Publishing house name must be between 3 and 50 characters."
             },
-            isBefore: {
-                args: [new Date().toISOString()],
-                msg: "Release date cannot be in the future."
-            }
+            
         }
     },
     description: {
         type: DataTypes.TEXT,
         allowNull: false,
         validate: {
-            len: [50,1000],
-            msg: "Description must be between 50 and 1000 characters long."
+            len: {
+                args: [50,1000],
+                msg: "Description must be between 50 and 1000 characters long."
+            }
         }
     },
 
@@ -63,8 +71,10 @@ const Book = sequelize.define("Book", {
         type: DataTypes.TEXT,
         allowNull: false,
         validate: {
-            len: [50,250],
-            msg: "Short description must be between 50 and 250 characters long."
+            len: {
+                args: [50,250],
+                msg: "Short description must be between 50 and 250 characters long."
+            }
         }
     },
     availability: {
