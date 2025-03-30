@@ -21,6 +21,12 @@ const Book = sequelize.define("Book", {
             }
         }
     },
+    slug: {
+        type:DataTypes.STRING(100),
+        unique:true,
+        allowNull:true
+
+    },
     author: {
         type: DataTypes.STRING(100),
         allowNull: false,
@@ -99,6 +105,9 @@ const Book = sequelize.define("Book", {
             book.publishingHouse = book.publishingHouse.trim();
             book.description = book.description.trim();
             book.shortDescription = book.shortDescription.trim();
+            if (book.slug) {
+                book.slug = book.slug.trim().toLowerCase();
+            }
         }
     }
 });

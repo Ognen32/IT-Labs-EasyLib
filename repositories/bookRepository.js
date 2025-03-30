@@ -1,4 +1,5 @@
 import Book from '../models/bookModel.js';
+import {Op} from 'sequelize'; // https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
 
 
 export const findBook = async function (title) {
@@ -6,11 +7,36 @@ export const findBook = async function (title) {
     const book = await Book.findOne({where: {title: title}})
     return book;
     } catch (err) {
-        return err.message;
+        throw new Error (err.message);
+    }
+}
+
+export const findBookBySlug = async function (slug) {
+    try {
+    const book = await Book.findOne({where: {slug: slug}})
+    return book;
+    } catch (err) {
+        throw new Error (err.message);
     }
 }
 
 
+export const findBooksSearch = async function (search) {
+    try {
+        const books = await Book.findAll({
+            attributes:['bookid','title', 'author'],
+            where: {
+                title: {
+                    [Op.like]: `%${search}%`
+                }
+            },
+            order: [["title", "ASC"]]
+        });
+        return books;
+    } catch (err) {
+        throw new Error (err.message);
+    }
+};
 
 
 export const createBook = async function (bookData) {
@@ -23,7 +49,8 @@ export const createBook = async function (bookData) {
             publishingHouse: bookData.publishingHouse,
             description: bookData.description,
             shortDescription: bookData.shortDescription,
-            availability: bookData.availability
+            availability: bookData.availability,
+            slug: bookData.slug
         }
     );
     return book

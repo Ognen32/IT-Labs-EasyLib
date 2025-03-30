@@ -1,6 +1,7 @@
-import {create_Genre, find_Genre, find_Genre_All, find_GenreAll_byName} from '../repositories/genreRepository.js';
-import {createBook, findBook} from '../repositories/bookRepository.js';
+import {create_Genre, find_Genre, find_Genre_All, find_GenreAll_byName,} from '../repositories/genreRepository.js';
+import {createBook, findBook, findBooksSearch, findBookBySlug} from '../repositories/bookRepository.js';
 import {capitalizeTrim} from '../utils/Capitalize_Trim.js';
+import slugify from "slugify";
 
 
 // OD TUKA -------------------------- GENRE SERVICE
@@ -36,6 +37,20 @@ export const findGenreAll = async function () {
 
  // DO TUKA -------------------------- GENRE SERVICE
 
+export const getBookBySlug = async (slug) => {
+    try {
+    if (!slug) {
+        throw new Error("Cannot Access Book") // Прати линк 404.
+    }
+    const book = await findBookBySlug(slug);
+    if (!book) {
+        throw new Error("Book Does not exist.") // Прати линк 404.
+    }
+    return book;
+} catch (err) {
+    throw new Error(err.message);
+}};
+
 
  export const createBookWithGenres = async (bookData, genres) => {
     
@@ -58,7 +73,7 @@ export const findGenreAll = async function () {
         genres = [genres]; // Convert single genre string to an array
     }
 
-
+    bookData.slug = slugify(bookData.title, {lower:true});
     const book = await createBook(bookData);
 
 
@@ -82,3 +97,19 @@ export const findGenreAll = async function () {
     throw new Error(err.message);
 }
  };
+
+
+
+ export const getBooksBySearchTerm = async (search) => {
+    try {
+    if (!search) {
+        throw new Error("Enter Search for testing ATM");
+    } 
+    const books = await findBooksSearch(search);
+    if (!books || books.length === 0) {
+        throw new Error("Book does not exist. Enter Again.");
+    }
+    return books;
+} catch (err) {
+    throw new Error(err.message);
+}};
