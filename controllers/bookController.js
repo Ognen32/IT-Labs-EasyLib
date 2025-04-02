@@ -1,4 +1,4 @@
-import {createGenre, findGenreAll, createBookWithGenres, getBooksBySearchTerm, getBookBySlug} from '../services/bookService.js';
+import {createGenre, findGenreAll, createBookWithGenres, getBooksBySearchTerm, getBookBySlug, removeBookById} from '../services/bookService.js';
 
 // OD TUKA -------------------------- GENRE CONTROLLER
 export const addGenre = async (req,res) => {
@@ -65,3 +65,14 @@ export const getBookBySlugController = async (req,res) => {
     } catch (err) {
         res.status(404).json({error:err.message});
     }};
+
+export const removeBookByIdController = async (req, res) => {
+    try {
+    const bookid = req.params.bookid;
+    const deletedBook = await removeBookById(bookid);
+    res.status(200).json(deletedBook);
+    } catch (err) {
+        res.status(404).json({error:err.message});
+    }
+
+}

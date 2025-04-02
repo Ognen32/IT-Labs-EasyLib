@@ -1,5 +1,6 @@
 import {create_Genre, find_Genre, find_Genre_All, find_GenreAll_byName,} from '../repositories/genreRepository.js';
-import {createBook, findBook, findBooksSearch, findBookBySlug} from '../repositories/bookRepository.js';
+import {createBook, findBook, findBooksSearch, findBookBySlug, deleteBook} from '../repositories/bookRepository.js';
+import {deleteBookGenreInstance} from '../repositories/bookGenreRepository.js';
 import {capitalizeTrim} from '../utils/Capitalize_Trim.js';
 import slugify from "slugify";
 
@@ -113,3 +114,20 @@ export const getBookBySlug = async (slug) => {
 } catch (err) {
     throw new Error(err.message);
 }};
+
+
+export const removeBookById = async (bookid) => {
+    try {
+        if (!bookid) {
+            throw new Error("Book ID must be provided.");
+        }
+        await deleteBookGenreInstance(bookid);
+        const deletedCount = await deleteBook(bookid);
+        if (deletedCount === 0) {
+            throw new Error("Book not found. Deletion failed.");
+        }
+        return { message: "Book was successfully deleted." };
+    } catch (err) {
+        throw new Error(err.message);
+    }
+};

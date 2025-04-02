@@ -1,5 +1,6 @@
 import Book from '../models/bookModel.js';
 import {Op} from 'sequelize'; // https://sequelize.org/docs/v6/core-concepts/model-querying-basics/
+import Genre from '../models/genresModel.js';
 
 
 export const findBook = async function (title) {
@@ -13,12 +14,20 @@ export const findBook = async function (title) {
 
 export const findBookBySlug = async function (slug) {
     try {
-    const book = await Book.findOne({where: {slug: slug}})
+    const book = await Book.findOne({where: {slug: slug},
+    include: [
+        {
+            model: Genre,
+            attributes: ['genreId', 'name'],
+            through: {attributes: []},
+        },
+    ],
+    })
     return book;
     } catch (err) {
         throw new Error (err.message);
     }
-}
+};
 
 
 export const findBooksSearch = async function (search) {
@@ -27,7 +36,7 @@ export const findBooksSearch = async function (search) {
             attributes:['bookid','title', 'author'],
             where: {
                 title: {
-                    [Op.like]: `%${search}%`
+                    [Op.iLike]: `%${search}%`
                 }
             },
             order: [["title", "ASC"]]
@@ -63,5 +72,19 @@ export const createBook = async function (bookData) {
         // Return a general error if no validation errors
         throw new Error (err.message);
     }
+}
+};
+
+export const deleteBook = async function (bookid) { 
+try {
+    const book = await Book.destroy({
+        where:{
+            bookid:bookid
+        }});
+        return book;
+} catch (err) {
+
+    throw new Error(err.message);
+
 }
 };

@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import {addGenre, getGenres, addBook, getBooksBySearch, getBookBySlugController} from '../controllers/bookController.js';
+import {addGenre, getGenres, addBook, getBooksBySearch, getBookBySlugController, removeBookByIdController} from '../controllers/bookController.js';
 import slugify from "slugify";
 
 const router = Router();
@@ -19,5 +19,7 @@ const router = Router();
     router.get("/books", getBooksBySearch);
 
     router.get("/book/:slug", getBookBySlugController);
+    
+    router.delete("/books/:bookid", removeBookByIdController);
 
 export default router
