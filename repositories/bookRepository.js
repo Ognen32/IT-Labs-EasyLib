@@ -12,6 +12,23 @@ export const findBook = async function (title) {
     }
 }
 
+export const findBookById = async function (bookid) {
+    try {
+        const book = await Book.findOne({where: {bookid: bookid},
+        include: [
+            {
+                model: Genre,
+                attributes: ['genreId', 'name'],
+                through: {attributes: []},
+            },
+        ]
+        });
+        return book;
+    } catch (err) {
+        throw new Error (err.message);
+    }
+};
+
 export const findBookBySlug = async function (slug) {
     try {
     const book = await Book.findOne({where: {slug: slug},
@@ -59,7 +76,11 @@ export const createBook = async function (bookData) {
             description: bookData.description,
             shortDescription: bookData.shortDescription,
             availability: bookData.availability,
-            slug: bookData.slug
+            slug: bookData.slug,
+            mainCover: bookData.mainCover,
+            coverArt: bookData.coverArt
+
+
         }
     );
     return book
@@ -86,5 +107,32 @@ try {
 
     throw new Error(err.message);
 
-}
-};
+}};
+
+export const updateBook = async function (bookid, bookData) { 
+    try {
+
+        const book = await Book.update(
+             {
+                title: bookData.title,
+                author: bookData.author,
+                releaseDate: bookData.releaseDate,
+                publishingHouse: bookData.publishingHouse,
+                description: bookData.description,
+                shortDescription: bookData.shortDescription,
+                availability: bookData.availability,
+            },
+            {
+                where: {bookid: bookid},
+                individualHooks: true
+            }
+        )
+        return book;
+    } catch (err) {
+        if (err.errors && err.errors.length > 0) {
+            throw new Error(err.errors[0].message);
+        } else {
+            throw new Error(`Failed to update book: ${err.message}`);
+        }
+    }
+ };

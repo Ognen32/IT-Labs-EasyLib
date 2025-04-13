@@ -1,6 +1,8 @@
 import {Router} from 'express';
-import {addGenre, getGenres, addBook, getBooksBySearch, getBookBySlugController, removeBookByIdController} from '../controllers/bookController.js';
+import {addGenre, getGenres, addBook, getBooksBySearch, getBookBySlugController, removeBookByIdController, getBooksByIdController, editBookIdController} from '../controllers/bookController.js';
 import slugify from "slugify";
+import {uploadAvatar, uploadTwoCovers} from '../middlewares/multer.js';
+import cloudinary from '../config/cloudinarySetup.js';
 
 const router = Router();
 
@@ -14,12 +16,30 @@ const router = Router();
 /*  Преку /addBook рутата ни овозможува да внесиме книга така што ги бара сите информации и нема да можи да се внеси без нив
     единсвтено можи да се нема жанра на книга и така да се внеси и овозможува на внесување на повеќе жанрови. Провевува исто
     така дали книгата е ако е тогаш враќа дека постој.  */
-    router.post("/addBook", addBook);
+    router.post("/addBook", uploadTwoCovers, addBook);
 
     router.get("/books", getBooksBySearch);
 
     router.get("/book/:slug", getBookBySlugController);
+    router.get("/book/edit/:bookid", getBooksByIdController);
+    router.patch("/book/edit/:bookid/edited", editBookIdController);
     
     router.delete("/books/:bookid", removeBookByIdController);
+    router.post("/books/test/avatars", uploadAvatar, async (req,res) => {
+        try {
+        const file = req.file;
+        const dataUri = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+        const title = req.body.title;
+        const result = await cloudinary.uploader.upload(dataUri, {
+            folder: 'Test',
+            public_id: `test_${Date.now()}`,
+            resource_type: 'image',
+            format: 'webp',
+          });
+        res.json(result)
+        } catch (err) {
+            console.log(err.message);
+        }
+    });
 
 export default router

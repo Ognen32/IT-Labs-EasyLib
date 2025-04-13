@@ -1,4 +1,4 @@
-import {createGenre, findGenreAll, createBookWithGenres, getBooksBySearchTerm, getBookBySlug, removeBookById} from '../services/bookService.js';
+import {createGenre, findGenreAll, createBookWithGenres, getBooksBySearchTerm, getBookBySlug, removeBookById, getBookById, updateBookById} from '../services/bookService.js';
 
 // OD TUKA -------------------------- GENRE CONTROLLER
 export const addGenre = async (req,res) => {
@@ -28,6 +28,7 @@ export const addBook = async (req,res) => {
     try {
     const {title, author, releaseDate, publishingHouse, description, shortDescription, availability} = req.body;
     const genres = req.body.genre;
+    const covers = req.files;
     const bookData = {
         title: title,
         author: author,
@@ -37,7 +38,7 @@ export const addBook = async (req,res) => {
         shortDescription: shortDescription,
         availability: availability
     };
-    const book = await createBookWithGenres(bookData, genres);
+    const book = await createBookWithGenres(bookData, genres, covers);
     return res.status(201).json(book);
 } catch(err) {
     console.error(err.message);
@@ -55,6 +56,16 @@ export const getBooksBySearch = async (req, res) => {
         res.status(500).json({ error: err.message })
     }
 };
+
+export const getBooksByIdController = async (req,res) => {
+    try {
+        const bookid = req.params.bookid;
+        const book = await getBookById(bookid);
+        res.status(200).json(book);
+    } catch (err) {
+        res.status(500).json ({error: err.message});
+    }
+}
 
 export const getBookBySlugController = async (req,res) => {
     try {
@@ -75,4 +86,26 @@ export const removeBookByIdController = async (req, res) => {
         res.status(404).json({error:err.message});
     }
 
+}
+
+export const editBookIdController = async (req,res) => {
+    try {
+      const {title, author, releaseDate, publishingHouse, description, shortDescription, availability} = req.body;
+      const bookid = req.params.bookid;
+      const bookData = {
+        title: title,
+        author: author,
+        releaseDate: releaseDate,
+        publishingHouse: publishingHouse,
+        description: description,
+        shortDescription: shortDescription,
+        availability: availability
+    };
+      const newGenres = req.body.genre;
+      const oldGenres = req.body.genreOld; 
+      const updatedBook = await updateBookById(bookid, bookData, newGenres, oldGenres);
+      res.status(200).json(updatedBook);
+    } catch (err) {
+        res.status(500).json ({error: err.message});
+    }
 }

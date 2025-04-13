@@ -94,7 +94,15 @@ const Book = sequelize.define("Book", {
             msg: "Availability must be a positive number"
             }
         }
-    }  
+    },
+    mainCover: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    coverArt: {
+        type: DataTypes.STRING,
+        allowNull: true
+    }
 }, 
 {
     timestamps: true,
