@@ -13,7 +13,7 @@ export const createGenre = async function (name) {
     const trim_name = capitalizeTrim(name);
     const find_genre = await findByName(trim_name);
     if (!find_genre) {
-      return await create_Genre(trim_name);
+      return await create(trim_name);
     } else {
       throw new Error("Genre already Exists");
     }

@@ -20,18 +20,13 @@ const router = Router();
 router.post("/genre", handleCreateGenre);
 
 //  Се добиваат сите жанрови што се внесени во самата база. Ова е потребно при внесување на самата книга. Да се види Book View.
-router.get("/GenreAll", handleGetGenres);
-
-/*  Преку /addBook рутата ни овозможува да внесиме книга така што ги бара сите информации и нема да можи да се внеси без нив
-    единсвтено можи да се нема жанра на книга и така да се внеси и овозможува на внесување на повеќе жанрови. Провевува исто
-    така дали книгата е ако е тогаш враќа дека постој.  */
-// router.post("/addBook", uploadTwoCovers, addBook);
+router.get("/genres", handleGetGenres);
 
 router.get("/books", handlerGetAllBooks);
 router.get("/book/:slug", handleGetBookBySlug);
 router.get("/book/:id", handleGetBookById);
 router.put("/book/:id", handleUpdateBook);
-router.post("/book", handleCreateBook);
+router.post("/book", uploadTwoCovers, handleCreateBook);
 router.delete("/books/:bookid", handleRemoveBook);
 router.post("/books/test/avatars", uploadAvatar, async (req, res) => {
   try {

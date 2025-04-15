@@ -13,7 +13,7 @@ import {
   createBookGenreInstance,
 } from "../repositories/bookGenreRepository.js";
 import slugify from "slugify";
-import cloudinary from "../config/cloudinary.js";
+import { uploadImage } from "./cloudinaryService.js";
 
 export const getBookBySlug = async (slug) => {
   try {
@@ -81,22 +81,9 @@ export const createBook = async (bookData, genres, covers) => {
       covers[1].mimetype
     };base64,${covers[1].buffer.toString("base64")}`;
 
-    const mainCoverResult = await cloudinary.uploader.upload(mainCover, {
-      folder: "book_mainCover", // Folder in Cloudinary
-      public_id: `book_cover_main_${Date.now()}`, // Unique ID for the image
-      resource_type: "image",
-      format: "png",
-    });
-
-    // Upload CoverArt to Cloudinary (transform to WebP)
-    const coverArtResult = await cloudinary.uploader.upload(coverArt, {
-      folder: "book_covers_coverArt",
-      public_id: `book_cover_art_${Date.now()}`, // Unique ID for the image
-      resource_type: "image",
-      format: "png",
-    });
-
-    // Ensure genres is always an array
+    const mainCoverResult = await uploadImage(mainCover, "book_mainCover", `book_cover_main_${Date.now()}`);
+    const coverArtResult = await uploadImage(coverArt, "book_covers_coverArt", `book_cover_art_${Date.now()}`);
+  
     if (!genres) {
       genres = []; // If no genres provided, set it to an empty array
     } else if (!Array.isArray(genres)) {
