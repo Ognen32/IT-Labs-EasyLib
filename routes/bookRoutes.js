@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import {addGenre, getGenres, addBook, getBooksBySearch, getBookBySlugController, removeBookByIdController, getBooksByIdController, editBookIdController} from '../controllers/bookController.js';
+import {addGenre, getGenres, addBook, getBooksBySearch, getBookBySlugController, removeBookByIdController, getBooksByIdController, editBookIdController, getLandingPageHandler, getFilteredLandingBooksHandler} from '../controllers/bookController.js';
 import slugify from "slugify";
 import {uploadAvatar, uploadTwoCovers} from '../middlewares/multer.js';
 import cloudinary from '../config/cloudinarySetup.js';
@@ -41,5 +41,9 @@ const router = Router();
             console.log(err.message);
         }
     });
+
+    router.get("/landingPage", getLandingPageHandler);
+
+    router.post("/landingPage/search", getFilteredLandingBooksHandler);
 
 export default router

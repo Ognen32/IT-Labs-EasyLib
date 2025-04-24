@@ -120,7 +120,7 @@ User.beforeSave(async (user) => {
 
 // Generates JWT token
 User.prototype.getJWTToken = function () {
-  return jwt.sign({ id: this.id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this.id, role:this.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES,
   });
 };

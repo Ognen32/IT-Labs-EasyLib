@@ -1,3 +1,5 @@
+import jwt from 'jsonwebtoken';
+
 export const sendToken = (user, statusCode, message, res) => {
   const token = user.getJWTToken(); // Getting JWT from the user model
 
@@ -14,4 +16,13 @@ export const sendToken = (user, statusCode, message, res) => {
       message,
       token, // Return token in the response body
     });
+};
+
+export const verifyToken = (token) => {
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verifies the token with the secret key
+    return decoded; // Returns decoded user information (id, role, etc.)
+  } catch (error) {
+    throw new Error('Token is invalid or expired');
+  }
 };

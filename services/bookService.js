@@ -1,5 +1,5 @@
 import {create_Genre, find_Genre, find_Genre_All, find_GenreAll_byName,} from '../repositories/genreRepository.js';
-import {createBook, findBook, findBooksSearch, findBookBySlug, deleteBook, findBookById, updateBook} from '../repositories/bookRepository.js';
+import {createBook, findBook, findBooksSearch, findBookBySlug, deleteBook, findBookById, updateBook, findBooksSearchLandingPage, findBooksBySearchOnly, findBooksByGenresOnly, findBooksBySearchAndGenres} from '../repositories/bookRepository.js';
 import {deleteBookGenreInstance, deleteBookGenreInstanceByIdANDTitle, createBookGenreInstance} from '../repositories/bookGenreRepository.js';
 import {capitalizeTrim} from '../utils/Capitalize_Trim.js';
 import slugify from "slugify";
@@ -229,3 +229,68 @@ export const removeBookById = async (bookid) => {
             throw new Error(err.message);
         }
     };
+
+    export const landingPageData = async () => { // Трендинг уште не е тука несме готови 
+        try {
+            const books_search = await findBooksSearchLandingPage();
+            if (!books_search || books_search.length === 0) {
+                throw new Error("No books found");
+            }
+            return books_search;
+
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    };
+
+
+    export const getFilteredLandingBooks = async (search, genres) => {
+        try {
+            if (search && search.trim() != "") {
+            search = search.trim();
+            }
+            if (!genres) {
+                genres = []; // If no genres provided, set it to an empty array
+            } else if (!Array.isArray(genres)) {
+                genres = [genres]; // Convert single genre string to an array
+            };
+
+            if (search && search.trim() !== "" && genres && genres.length > 0) { // МНОГУ БИТНО ЗА ПОСЛЕ ДА СЕ ИСКОРИСТИ ЛОГИКАТА
+                // Search and genres are both provided
+                const books = await findBooksBySearchAndGenres(search, genres);
+
+                const filteredBooks = books.filter(book => {
+                    const bookGenres = book.Genres.map(g => g.name);
+                    return genres.every(g => bookGenres.includes(g));
+                });
+
+                if (!filteredBooks || filteredBooks.length === 0) {
+                    throw new Error("No books found with the given search and genres.");
+                }
+    
+                return filteredBooks;
+            } else if (search && search.trim() !== "") {
+                // Only search is provided
+                const books = await findBooksBySearchOnly(search);
+                if (!books || books.length === 0) {
+                    throw new Error("No books found with the given search and genres.");
+                }
+                return books;
+            } else if (genres && genres.length > 0) {
+                // Only genres are provided
+                const books = await findBooksByGenresOnly(genres);
+
+                if (!books || books.length === 0) {
+                    throw new Error("No books found with the given search and genres.");
+                }
+
+                return books;
+            } else {
+                const books_search = await findBooksSearchLandingPage();
+                return books_search;
+            }
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    };
+    
