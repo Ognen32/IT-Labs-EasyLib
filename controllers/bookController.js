@@ -111,3 +111,23 @@ export const handleUpdateBook = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+export const getLandingPageHandler = async (req, res) => {
+  try {
+    const data = await landingPageData();
+    res.status(200).json({ data });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getFilteredLandingBooksHandler = async (req, res) => {
+  try {
+    const search = req.query.search || req.body.search;
+    const genres = req.body.genre;
+    const data = await getFilteredLandingBooks(search, genres);
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import { errorMiddleware } from "./middlewares/error.js";
 import authRoutes from "./routes/authRoutes.js";
 import bookRoutes from './routes/bookRoutes.js';
+import favouriteBookRoutes from './routes/favouriteBookRoutes.js';
 import { connectDB } from "./database/dbConnect.js";
 import bodyParser from 'body-parser';
 import './models/associations.js'; // Ќоке се користи релациони бази мора вака да се направи нов фајл кај шо ќе ги поврзи. еднаш мора да се вчиат па да се напрај relationship
@@ -20,8 +21,9 @@ app.use(express.urlencoded({ extended: true })); // For parsing url encoded data
 app.use(bodyParser.urlencoded({ extended: false }))
 
 // Defining routes and giving them a path to connect to the routes
-app.use('/api/v1/user', authRoutes);
+app.use('/api', authRoutes);
 app.use('/api', bookRoutes);
+app.use('/api', favouriteBookRoutes);
 
 app.use(errorMiddleware);
 

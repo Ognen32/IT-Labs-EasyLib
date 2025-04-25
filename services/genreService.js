@@ -4,30 +4,24 @@ import {
   findGenres,
 } from "../repositories/genreRepository.js";
 import { capitalizeTrim } from "../utils/Capitalize_Trim.js";
+import { ValidationError } from "../utils/error.js";
 
 export const createGenre = async function (name) {
-  try {
-    if (!name) {
-      throw new Error("Name must be entered");
-    }
-    const trim_name = capitalizeTrim(name);
-    const find_genre = await findByName(trim_name);
-    if (!find_genre) {
-      return await create(trim_name);
-    } else {
-      throw new Error("Genre already Exists");
-    }
-  } catch (err) {
-    throw new Error(err.message);
+  if (!name) {
+    throw new ValidationError("Name must be entered");
   }
+
+  const trimmedName = capitalizeTrim(name);
+  const existingGenre = await findByName(trimmedName);
+
+  if (existingGenre) {
+    throw new ValidationError("Genre already exists");
+  }
+
+  return create(trimmedName);
 };
 
 export const getAllGenres = async function () {
-  try {
-    const genresAll = await findGenres();
-    return genresAll;
-  } catch (err) {
-    console.error("Error fetching genres:", err.message);
-    throw new Error(err.message);
-  }
+  const genresAll = await findGenres();
+  return genresAll;
 };

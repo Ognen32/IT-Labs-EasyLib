@@ -50,7 +50,7 @@ export const findBookBySlug = async function (slug) {
 export const findBooksSearch = async function (search) {
   try {
     const books = await Book.findAll({
-      attributes: ["bookid", "title", "author"],
+      attributes: ["bookid", "title", "author", "coverArt"],
       where: {
         title: {
           [Op.iLike]: `%${search}%`,
@@ -128,5 +128,108 @@ export const update = async function (bookid, bookData) {
     } else {
       throw new Error(`Failed to update book: ${err.message}`);
     }
+  }
+};
+
+export const findBooksSearchLandingPage = async function () {
+  try {
+    const books = await Book.findAll({
+      attributes: ["bookid", "title", "author", "coverArt"],
+      order: [["title", "ASC"]],
+      limit: 10,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
+    return books;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findBooksBySearchOnly = async function (search) {
+  // Ова само се користи за Landing Page дека го имаме лимитирано на 10
+  try {
+    const books = await Book.findAll({
+      attributes: ["bookid", "title", "author", "coverArt"],
+      where: {
+        title: {
+          [Op.iLike]: `%${search}%`,
+        },
+      },
+      order: [["title", "ASC"]],
+      limit: 10,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
+    return books;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findBooksByGenresOnly = async function (genres) {
+  // Ова само се користи за Landing Page дека го имаме лимитирано на 10
+  try {
+    const books = await Book.findAll({
+      attributes: ["bookid", "title", "author", "coverArt"],
+      order: [["title", "ASC"]],
+      limit: 10,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          where: {
+            name: {
+              [Op.in]: genres,
+            },
+          },
+          through: { attributes: [] },
+        },
+      ],
+    });
+    return books;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findBooksBySearchAndGenres = async function (search, genres) {
+  // Ова само се користи за Landing Page дека го имаме лимитирано на 10
+  try {
+    const books = await Book.findAll({
+      attributes: ["bookid", "title", "author", "coverArt"],
+      where: {
+        title: {
+          [Op.iLike]: `%${search}%`,
+        },
+      },
+      order: [["title", "ASC"]],
+      limit: 10,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          where: {
+            name: {
+              [Op.in]: genres,
+            },
+          },
+          through: { attributes: [] },
+        },
+      ],
+    });
+    return books;
+  } catch (err) {
+    throw new Error(err.message);
   }
 };

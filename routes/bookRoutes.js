@@ -6,21 +6,21 @@ import {
   handleUpdateBook,
   handleRemoveBook,
   handleGetBookBySlug,
+  getLandingPageHandler,
+  getFilteredLandingBooksHandler,
 } from "../controllers/bookController.js";
 import {
-    handleCreateGenre,
-    handleGetGenres
-  } from "../controllers/genreController.js";
+  handleCreateGenre,
+  handleGetGenres,
+} from "../controllers/genreController.js";
 import { uploadAvatar, uploadTwoCovers } from "../middlewares/multer.js";
-import  cloudinary  from "../config/cloudinary.js";
+import cloudinary from "../config/cloudinary.js";
+import { asyncHandler } from "../middlewares/asyncHandler.js";
 
 const router = Router();
 
-//  Или типовите на жанрови ќе ги внесваме во самата база каде што ќе биди полесно и одма ќе ги влечи или преку самата веб страница
-router.post("/genre", handleCreateGenre);
-
-//  Се добиваат сите жанрови што се внесени во самата база. Ова е потребно при внесување на самата книга. Да се види Book View.
-router.get("/genres", handleGetGenres);
+router.post("/genre", asyncHandler(handleCreateGenre));
+router.get("/genres", asyncHandler(handleGetGenres));
 
 router.get("/books", handlerGetAllBooks);
 router.get("/book/:slug", handleGetBookBySlug);
@@ -46,5 +46,7 @@ router.post("/books/test/avatars", uploadAvatar, async (req, res) => {
     console.log(err.message);
   }
 });
+router.get("/landingPage", getLandingPageHandler);
+router.post("/landingPage/search", getFilteredLandingBooksHandler);
 
 export default router;

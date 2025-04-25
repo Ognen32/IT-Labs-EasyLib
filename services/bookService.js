@@ -7,6 +7,7 @@ import {
   findBookById,
   update,
 } from "../repositories/bookRepository.js";
+import { findByName } from "../repositories/genreRepository.js";
 import {
   deleteBookGenreInstance,
   deleteBookGenreInstanceByIdANDTitle,
@@ -81,24 +82,26 @@ export const createBook = async (bookData, genres, covers) => {
       covers[1].mimetype
     };base64,${covers[1].buffer.toString("base64")}`;
 
-    const mainCoverResult = await uploadImage(mainCover, "book_mainCover", `book_cover_main_${Date.now()}`);
-    const coverArtResult = await uploadImage(coverArt, "book_covers_coverArt", `book_cover_art_${Date.now()}`);
-  
-    if (!genres) {
-      genres = []; // If no genres provided, set it to an empty array
-    } else if (!Array.isArray(genres)) {
-      genres = [genres]; // Convert single genre string to an array
-    }
+    const mainCoverResult = await uploadImage(
+      mainCover,
+      "book_mainCover",
+      `book_cover_main_${Date.now()}`
+    );
+    const coverArtResult = await uploadImage(
+      coverArt,
+      "book_covers_coverArt",
+      `book_cover_art_${Date.now()}`
+    );
 
     bookData.slug = slugify(bookData.title, { lower: true });
-    bookData.mainCover = mainCoverResult.url;
+    bookData.mainCover = mainCoverResult.public_id;
     bookData.coverArt = coverArtResult.url;
     const book = await create(bookData);
 
     if (genres && genres.length > 0) {
       const bookGenres = [];
       for (let genreName of genres) {
-        const genre = await find_Genre(genreName);
+        const genre = await findByName(genreName);
         if (genre) {
           bookGenres.push(genre);
         }
@@ -187,6 +190,70 @@ export const updateBook = async (bookid, bookData, genres, genresOld) => {
     }
 
     return { message: "Book Updated Correctly!" };
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const landingPageData = async () => {
+  // Трендинг уште не е тука несме готови
+  try {
+    const books_search = await findBooksSearchLandingPage();
+    if (!books_search || books_search.length === 0) {
+      throw new Error("No books found");
+    }
+    return books_search;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const getFilteredLandingBooks = async (search, genres) => {
+  try {
+    if (search && search.trim() != "") {
+      search = search.trim();
+    }
+    if (!genres) {
+      genres = []; // If no genres provided, set it to an empty array
+    } else if (!Array.isArray(genres)) {
+      genres = [genres]; // Convert single genre string to an array
+    }
+
+    if (search && search.trim() !== "" && genres && genres.length > 0) {
+      // МНОГУ БИТНО ЗА ПОСЛЕ ДА СЕ ИСКОРИСТИ ЛОГИКАТА
+      // Search and genres are both provided
+      const books = await findBooksBySearchAndGenres(search, genres);
+
+      const filteredBooks = books.filter((book) => {
+        const bookGenres = book.Genres.map((g) => g.name);
+        return genres.every((g) => bookGenres.includes(g));
+      });
+
+      if (!filteredBooks || filteredBooks.length === 0) {
+        throw new Error("No books found with the given search and genres.");
+      }
+
+      return filteredBooks;
+    } else if (search && search.trim() !== "") {
+      // Only search is provided
+      const books = await findBooksBySearchOnly(search);
+      if (!books || books.length === 0) {
+        throw new Error("No books found with the given search and genres.");
+      }
+      return books;
+    } else if (genres && genres.length > 0) {
+      // Only genres are provided
+      const books = await findBooksByGenresOnly(genres);
+
+      if (!books || books.length === 0) {
+        throw new Error("No books found with the given search and genres.");
+      }
+
+      return books;
+    } else {
+      const books_search = await findBooksSearchLandingPage();
+      return books_search;
+    }
   } catch (err) {
     throw new Error(err.message);
   }
