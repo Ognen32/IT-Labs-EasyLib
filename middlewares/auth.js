@@ -3,7 +3,6 @@ import {ErrorHandler} from '../middlewares/error.js';
 
 export const isAuthenticated = (req, res, next) => {
   const token = req.cookies.token; // Requests the token form the cookies
-
  // If there is no token, return an error message that requires authentication
 
   if (!token) {

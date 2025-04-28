@@ -6,6 +6,10 @@ import {
   deleteBook,
   findBookById,
   update,
+  findBooksSearchLandingPage,
+  findBooksBySearchOnly,
+  findBooksByGenresOnly,
+  findBooksBySearchAndGenres
 } from "../repositories/bookRepository.js";
 import { findByName } from "../repositories/genreRepository.js";
 import {
@@ -93,6 +97,12 @@ export const createBook = async (bookData, genres, covers) => {
       `book_cover_art_${Date.now()}`
     );
 
+    if (!genres) {
+      genres = []; // If no genres provided, set it to an empty array
+    } else if (!Array.isArray(genres)) {
+      genres = [genres]; // Convert single genre string to an array
+    }
+
     bookData.slug = slugify(bookData.title, { lower: true });
     bookData.mainCover = mainCoverResult.public_id;
     bookData.coverArt = coverArtResult.url;
@@ -135,56 +145,39 @@ export const removeBook = async (bookid) => {
 
 export const updateBook = async (bookid, bookData, genres, genresOld) => {
   try {
-    for (let key in bookData) {
-      if (!bookData[key]) throw new Error(`Field "${key}" must be entered`);
-    }
-    console.log(genres);
     const book = await findBookById(bookid);
     if (!book) {
       throw new Error("Book does not exist.");
     }
+
     const bookUpdates = {};
     for (let key in bookData) {
       if (bookData[key] !== undefined && bookData[key] !== null) {
         if (typeof bookData[key] === "string") {
-          // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/typeof
           bookData[key] = bookData[key].trim();
         }
-        if (bookData[key] !== book[key]) bookUpdates[key] = bookData[key];
+        if (bookData[key] !== book[key]) {
+          bookUpdates[key] = bookData[key];
+        }
       }
     }
+
     if (Object.keys(bookUpdates).length > 0) {
-      // This condition will be true because there are changes in bookUpdates
       await update(bookid, bookUpdates);
     }
 
-    if (!genresOld) {
-      genresOld = []; // If no genres provided, set it to an empty array
-    } else if (!Array.isArray(genresOld)) {
-      genresOld = [genresOld]; // Convert single genre string to an array
-    }
-
     if (genresOld && genresOld.length > 0) {
-      const genresToRemove = book.Genres.filter(
-        (existingGenre) => genresOld.includes(existingGenre.name) // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
-      );
-
+      const genresToRemove = book.Genres.filter((g) => genresOld.includes(g.name));
       for (let genre of genresToRemove) {
         await deleteBookGenreInstanceByIdANDTitle(bookid, genre.genreId);
       }
     }
-    if (!genres) {
-      genres = []; // If no genres provided, set it to an empty array
-    } else if (!Array.isArray(genres)) {
-      genres = [genres]; // Convert single genre string to an array
-    }
 
     if (genres && genres.length > 0) {
       for (let genreName of genres) {
-        const genres = await find_Genre(genreName);
-        console.log(genres);
-        if (genres) {
-          await createBookGenreInstance(bookid, genres.genreId);
+        const foundGenre = await findGenre(genreName);
+        if (foundGenre) {
+          await createBookGenreInstance(bookid, foundGenre.genreId);
         }
       }
     }

@@ -24,8 +24,8 @@ router.get("/genres", asyncHandler(handleGetGenres));
 
 router.get("/books", handlerGetAllBooks);
 router.get("/book/:slug", handleGetBookBySlug);
-router.get("/book/:id", handleGetBookById);
-router.put("/book/:id", handleUpdateBook);
+router.get("/bookot/:bookid", handleGetBookById);
+router.patch("/book/:id", handleUpdateBook);
 router.post("/book", uploadTwoCovers, handleCreateBook);
 router.delete("/books/:bookid", handleRemoveBook);
 router.post("/books/test/avatars", uploadAvatar, async (req, res) => {

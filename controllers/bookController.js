@@ -5,6 +5,8 @@ import {
   removeBook,
   getBookById,
   updateBook,
+  landingPageData,
+  getFilteredLandingBooks
 } from "../services/bookService.js";
 
 export const handleCreateBook = async (req, res) => {
@@ -50,6 +52,7 @@ export const handlerGetAllBooks = async (req, res) => {
 export const handleGetBookById = async (req, res) => {
   try {
     const bookid = req.params.bookid;
+    console.log(bookid);
     const book = await getBookById(bookid);
     res.status(200).json(book);
   } catch (err) {
@@ -79,6 +82,11 @@ export const handleRemoveBook = async (req, res) => {
 
 export const handleUpdateBook = async (req, res) => {
   try {
+    const bookid = req.params.id;
+    if (!bookid) {
+      return res.status(400).json({ error: err.message });
+    }
+
     const {
       title,
       author,
@@ -88,27 +96,31 @@ export const handleUpdateBook = async (req, res) => {
       shortDescription,
       availability,
     } = req.body;
-    const bookid = req.params.bookid;
+
     const bookData = {
-      title: title,
-      author: author,
-      releaseDate: releaseDate,
-      publishingHouse: publishingHouse,
-      description: description,
-      shortDescription: shortDescription,
-      availability: availability,
+      title,
+      author,
+      releaseDate,
+      publishingHouse,
+      description,
+      shortDescription,
+      availability,
     };
+
     const newGenres = req.body.genre;
     const oldGenres = req.body.genreOld;
+
     const updatedBook = await updateBook(
       bookid,
       bookData,
       newGenres,
       oldGenres
     );
-    res.status(200).json(updatedBook);
+    return res.status(200).json(updatedBook);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err.message);
+    return res.status(500).json({ error: err.message });
   }
 };
 

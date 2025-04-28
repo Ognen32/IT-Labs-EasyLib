@@ -1,3 +1,5 @@
+import jwt from 'jsonwebtoken';
+
 export const sendToken = (user, statusCode, message, res) => {
   const token = user.getJWTToken(); // Getting JWT from the user model
 
