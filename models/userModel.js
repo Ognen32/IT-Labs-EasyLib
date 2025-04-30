@@ -101,6 +101,19 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
   },
+  limit: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    defaultValue: 5
+  },
+  issueDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  },
+  expirationDate: {
+    type: DataTypes.DATE,
+    allowNull: true,
+  }
 },
   {
     timestamps: true,

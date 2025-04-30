@@ -175,7 +175,7 @@ export const updateBook = async (bookid, bookData, genres, genresOld) => {
 
     if (genres && genres.length > 0) {
       for (let genreName of genres) {
-        const foundGenre = await findGenre(genreName);
+        const foundGenre = await findByName(genreName);
         if (foundGenre) {
           await createBookGenreInstance(bookid, foundGenre.genreId);
         }
