@@ -5,9 +5,9 @@ import { registerUser, loginUser, logoutUser, forgotPassword, resetPassword } fr
 
 const router = express.Router();
 
-router.post('/register', registerUser);
-router.post('/login', loginUser);
-router.get('/logout', logoutUser);
+router.post('/register', registerUser); 
+router.post('/login', loginUser); // Works
+router.get('/logout', logoutUser); // Works
 router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword/:token', resetPassword);
 
