@@ -1,4 +1,4 @@
-import Transcation from "../models/transcationModel.js";
+import Transcation from "../models/transcationModel.js"; 
 import TranscationItem from "../models/transactionItemModel.js";
 import Book from "../models/bookModel.js";
 import User from "../models/userModel.js";
@@ -70,7 +70,7 @@ export const findExpiredPendingTransactions = async (now) => {
         },
         {
           model: TranscationItem, 
-          attributes: ["id"], 
+          attributes: ["id", "bookid"], 
         },
       ],
     });

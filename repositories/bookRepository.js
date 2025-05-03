@@ -233,3 +233,26 @@ export const findBooksBySearchAndGenres = async function (search, genres) {
     throw new Error(err.message);
   }
 };
+
+export const updateBookAvailability = async function (bookid, num) {
+  try {
+    const [updatedRows] = await Book.increment("availability", {
+      by: num,
+      where: { bookid: bookid },
+    });
+    return updatedRows;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findBookAvailability = async function (bookid) {
+  try {
+    const book = await Book.findOne({ where:{
+      bookid:bookid
+    }});
+    return book;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};

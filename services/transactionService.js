@@ -1,4 +1,8 @@
-import { createTranscation, findAllActivePendingTransactions, findExpiredPendingTransactions} from "../repositories/transcationRepository.js";
+import {
+  createTranscation,
+  findAllActivePendingTransactions,
+  findExpiredPendingTransactions,
+} from "../repositories/transcationRepository.js";
 import {
   createTranscationItem,
   checkExistingTransaction,
@@ -8,6 +12,10 @@ import {
   updateUserLimit,
 } from "../repositories/userRepository.js";
 import { findCartItem } from "../repositories/cartRepository.js";
+import {
+  updateBookAvailability,
+  findBookAvailability,
+} from "../repositories/bookRepository.js";
 import { ValidationError } from "../utils/error.js";
 
 export const handleBuyNow = async (userid, bookid) => {
@@ -46,6 +54,17 @@ export const handleBuyNow = async (userid, bookid) => {
         "User has excedeed maximum books at the moment!"
       );
     }
+
+    const book = await findBookAvailability(bookid);
+    if (!book) {
+      throw new ValidationError("Book not found");
+    }
+    const book_availability = book.availability;
+    console.log(book_availability);
+    if (book_availability <= 0) {
+      throw new ValidationError("There are no availability copies of the book");
+    }
+
     const now = new Date();
     const issueDate = new Date(now);
     const expirationDate = new Date(now);
@@ -57,7 +76,9 @@ export const handleBuyNow = async (userid, bookid) => {
     );
     const transcationItem = await createTranscationItem(transaction.id, bookid);
     const userLimitUpdated = await updateUserLimit(userid, -1);
+    const bookAvailabilityUpdated = await updateBookAvailability(bookid, -1);
     console.log(userLimitUpdated);
+    console.log(bookAvailabilityUpdated);
     return { transaction, transcationItem };
   } catch (err) {
     throw new Error(err.message);
@@ -70,21 +91,31 @@ export const getPendingTransactions = async () => {
 
     // Step 1: Get all expired pending transactions
     const expiredTransactions = await findExpiredPendingTransactions(now);
-
     let updatedUsersCount = 0;
 
     // Step 2: Loop and update status + user limit
     for (const transaction of expiredTransactions) {
-      transaction.status = 'cancelled';
+      transaction.status = "cancelled";
       if (transaction.User) {
-        const numberOfBooks = transaction.TranscationItems?.length || 1;
-        const updatelimit = await updateUserLimit(transaction.User.id, numberOfBooks)
+        const numberOfBooks = transaction.TransactionItems?.length || 1;
+        const updatelimit = await updateUserLimit(
+          transaction.User.id,
+          numberOfBooks
+        );
         updatedUsersCount++;
+        if (
+          transaction.TransactionItems &&
+          transaction.TransactionItems.length > 0
+        ) {
+          for (const item of transaction.TransactionItems) {
+            console.log("Updating availability for bookid:", item.bookid);
+            await updateBookAvailability(item.bookid, 1);
+          }
+        }
       }
       await transaction.save(); // Save updated status
     }
-    console.log(updatedUsersCount);
-    // Step 3: Return all still-active pending transactions
+    
     const activeTransactions = await findAllActivePendingTransactions(now);
 
     return activeTransactions;
