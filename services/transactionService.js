@@ -1,4 +1,4 @@
-import { createTranscation, findAllActivePendingTransactions} from "../repositories/transcationRepository.js";
+import { createTranscation, findAllActivePendingTransactions, findExpiredPendingTransactions} from "../repositories/transcationRepository.js";
 import {
   createTranscationItem,
   checkExistingTransaction,
@@ -66,8 +66,28 @@ export const handleBuyNow = async (userid, bookid) => {
 
 export const getPendingTransactions = async () => {
   try {
-    const now = new Date()
-    return await findAllActivePendingTransactions(now);
+    const now = new Date();
+
+    // Step 1: Get all expired pending transactions
+    const expiredTransactions = await findExpiredPendingTransactions(now);
+
+    let updatedUsersCount = 0;
+
+    // Step 2: Loop and update status + user limit
+    for (const transaction of expiredTransactions) {
+      transaction.status = 'cancelled';
+      if (transaction.User) {
+        const numberOfBooks = transaction.TranscationItems?.length || 1;
+        const updatelimit = await updateUserLimit(transaction.User.id, numberOfBooks)
+        updatedUsersCount++;
+      }
+      await transaction.save(); // Save updated status
+    }
+    console.log(updatedUsersCount);
+    // Step 3: Return all still-active pending transactions
+    const activeTransactions = await findAllActivePendingTransactions(now);
+
+    return activeTransactions;
   } catch (err) {
     throw new Error(err.message);
   }
