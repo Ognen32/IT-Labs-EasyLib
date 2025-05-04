@@ -2,6 +2,9 @@ import {
   createTranscation,
   findAllActivePendingTransactions,
   findExpiredPendingTransactions,
+  confirmTransaction,
+  findAllIssuedTransactions,
+  findTransactionsByPKPending,
 } from "../repositories/transcationRepository.js";
 import {
   createTranscationItem,
@@ -115,10 +118,95 @@ export const getPendingTransactions = async () => {
       }
       await transaction.save(); // Save updated status
     }
-    
+
     const activeTransactions = await findAllActivePendingTransactions(now);
 
     return activeTransactions;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const handleConfirmTransaction = async (transactionid) => {
+  try {
+    if (!transactionid) {
+      throw new ValidationError("Transaction ID is required.");
+    }
+    const now = new Date();
+    const borrowedDate = new Date(now);
+    const dueDate = new Date(now);
+    dueDate.setDate(dueDate.getDate() + 14);
+    const result = await confirmTransaction(
+      transactionid,
+      borrowedDate,
+      dueDate
+    );
+    return result;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const getIssuedTransactions = async () => {
+  try {
+    const issuedTransactions = await findAllIssuedTransactions();
+    if (!issuedTransactions || issuedTransactions.length <= 0) {
+      throw new ValidationError("No issued books found!");
+    }
+
+    for (const transaction of issuedTransactions) {
+      const borrowed = new Date(transaction.borrowedDate);
+      const due = new Date(transaction.dueDate);
+
+      // Reset time part for accurate day difference
+      borrowed.setHours(0, 0, 0, 0);
+      due.setHours(0, 0, 0, 0);
+
+      const diffMs = due - borrowed;
+      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+      // Also update in-memory object so returned data is correct
+      transaction.diffDate = diffDays;
+
+      // Update in DB
+      await transaction.save();
+    }
+    console.log(issuedTransactions);
+    return issuedTransactions; // Return the correct variable name
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const handleCancelTransaction = async (transactionid) => {
+  try {
+    if (!transactionid) {
+      throw new Error("Transaction ID is missing!");
+    }
+
+    const transaction = await findTransactionsByPKPending(transactionid);
+
+    if (!transaction) {
+      throw new Error("Transaction not found!");
+    }
+
+    if (transaction.User) {
+      const numberOfBooks = transaction.TransactionItems?.length || 1;
+
+      await updateUserLimit(transaction.User.id, numberOfBooks);
+
+      if (transaction.TransactionItems && transaction.TransactionItems.length > 0) {
+        for (const item of transaction.TransactionItems) {
+          console.log("Updating availability for bookid:", item.bookid);
+          await updateBookAvailability(item.bookid, 1);
+        }
+      }
+    }
+
+    transaction.status = "cancelled";
+    await transaction.save(); // await here is important
+
+    return transaction;
   } catch (err) {
     throw new Error(err.message);
   }

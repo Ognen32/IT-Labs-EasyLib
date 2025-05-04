@@ -33,6 +33,10 @@ const Transaction = sequelize.define("Transaction", {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  diffDate: {
+    type: DataTypes.INTEGER,
+    allowNull:true
+  },
   returnedDate: {
     type: DataTypes.DATE,
     allowNull: true,

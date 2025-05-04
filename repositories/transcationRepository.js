@@ -1,4 +1,4 @@
-import Transcation from "../models/transcationModel.js"; 
+import Transcation from "../models/transcationModel.js";
 import TranscationItem from "../models/transactionItemModel.js";
 import Book from "../models/bookModel.js";
 import User from "../models/userModel.js";
@@ -69,11 +69,91 @@ export const findExpiredPendingTransactions = async (now) => {
           attributes: ["id", "limit"],
         },
         {
-          model: TranscationItem, 
-          attributes: ["id", "bookid"], 
+          model: TranscationItem,
+          attributes: ["id", "bookid"],
         },
       ],
     });
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const confirmTransaction = async function (
+  transactionid,
+  borrowedDate,
+  dueDate
+) {
+  try {
+    const transaction = await Transcation.update(
+      {
+        status: "issued",
+        borrowedDate: borrowedDate,
+        dueDate: dueDate,
+      },
+      {
+        where: { id: transactionid },
+      }
+    );
+    return transaction;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+
+
+export const findAllIssuedTransactions = async () => {
+  try {
+    const transactions = await Transcation.findAll({
+      where: {
+        status: "issued",
+      },
+      include: [
+        {
+          model: TranscationItem,
+          include: [
+            {
+              model: Book,
+              attributes: ["title", "author", "coverArt"],
+            },
+          ],
+        },
+        {
+          model: User,
+          attributes: ["id", "userName", "email", "phoneNumber", "city", "address"  ],
+        },
+      ],
+      order: [["borrowedDate", "ASC"]],
+    });
+
+    return transactions;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+
+export const findTransactionsByPKPending = async function (transactionid) {
+  try {
+    const transaction = await Transcation.findOne({
+      where: {
+        id: transactionid,
+        status: "pending"
+      },
+      include: [
+        {
+          model: TranscationItem,
+          attributes: ["id", "bookid"],
+        },
+        {
+          model: User,
+          attributes: ["id", "limit"],
+        }
+      ]
+    });
+
+    return transaction;
   } catch (err) {
     throw new Error(err.message);
   }
