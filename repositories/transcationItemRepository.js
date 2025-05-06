@@ -68,3 +68,60 @@ export const findReturnedBooksByUserAndDateRange = async function (userid, start
     throw new Error(err.message);
   }
 };
+
+export const findIssuedBooksByUserDueDateRange = async (userid, startDate, endDate) => {
+  try {
+    const myBorrowedBooks = await TransactionItem.findAll({
+      attributes: ["id", "bookid"],
+      include: [
+        {
+          model: Book,
+          attributes: ["bookid", "title", "author", "slug", "coverArt"]
+        },
+        {
+          model: Transaction,
+          attributes: ["id", "userid", "dueDate"],
+          where: {
+            userid: userid,
+            status: "issued",
+            dueDate: {
+              [Op.between]: [startDate, endDate],
+            },
+          },
+        },
+      ],
+    });
+    return myBorrowedBooks;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findIssuedBooksByUserDueDateWithTIme= async (userid, date) => {
+  try {
+    const myBorrowedBooks = await TransactionItem.findAll({
+      attributes: ["id", "bookid"],
+      include: [
+        {
+          model: Book,
+          attributes: ["bookid", "title", "author", "slug", "coverArt"]
+        },
+        {
+          model: Transaction,
+          attributes: ["id", "userid", "dueDate"],
+          where: {
+            userid: userid,
+            status: "issued",
+            dueDate: {
+              [Op.gt]: date,
+            },
+          },
+        },
+      ],
+    });
+
+    return myBorrowedBooks;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};

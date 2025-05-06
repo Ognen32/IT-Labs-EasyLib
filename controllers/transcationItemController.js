@@ -1,4 +1,4 @@
-import {handleGetReturnedBooksByDateRanges} from "../services/transactionService.js";
+import {handleGetReturnedBooksByDateRanges, handleGetBorrowedAndDueBooks} from "../services/transactionService.js";
 
 
 export const handlerReturnedBooksByRanges = async (req, res) => {
@@ -10,4 +10,13 @@ export const handlerReturnedBooksByRanges = async (req, res) => {
       res.status(500).json({ error: err.message });
     }
   };
-  
+
+export const handlerBorrowedDueBooks = async (req,res) => {
+  try {
+    const userid = req.user.id;
+    const borrowedAndDue = await handleGetBorrowedAndDueBooks(userid);
+    res.status(200).json(borrowedAndDue);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}

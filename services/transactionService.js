@@ -10,7 +10,9 @@ import {
 import {
   createTranscationItem,
   checkExistingTransaction,
-  findReturnedBooksByUserAndDateRange
+  findReturnedBooksByUserAndDateRange,
+  findIssuedBooksByUserDueDateRange,
+  findIssuedBooksByUserDueDateWithTIme
 } from "../repositories/transcationItemRepository.js";
 import {
   findUserLimit,
@@ -22,7 +24,7 @@ import {
   findBookAvailability,
 } from "../repositories/bookRepository.js";
 import { ValidationError } from "../utils/error.js";
-import { subDays, subMonths, startOfYear, startOfDay, endOfDay} from "date-fns";
+import { subDays, subMonths, startOfYear, startOfDay, endOfDay, addDays, } from "date-fns";
 
 export const handleBuyNow = async (userid, bookid) => {
   try {
@@ -260,23 +262,23 @@ export const handleGetReturnedBooksByDateRanges = async (userid) => {
       },
       lastWeek: {
         startDate: startOfDay(subDays(today, 6)),
-        endDate: endOfDay(subDays(today, 3)),
+        endDate: endOfDay(subDays(today, 3)), // the day *before* last3Days starts
       },
       lastMonth: {
         startDate: startOfDay(subMonths(today, 1)),
-        endDate: endOfDay(subDays(today, 7)),
+        endDate: endOfDay(subDays(today, 7)), // the day *before* lastWeek starts
       },
       last6Months: {
         startDate: startOfDay(subMonths(today, 6)),
-        endDate: endOfDay(subMonths(today, 1)),
+        endDate: endOfDay(subMonths(today, 1).setDate(subMonths(today, 1).getDate() - 1)), // day before lastMonth starts
       },
       thisYear: {
         startDate: startOfDay(startOfYear(today)),
-        endDate: endOfDay(subMonths(today, 6)),
+        endDate: endOfDay(subMonths(today, 6).setDate(subMonths(today, 6).getDate() - 1)), // day before last6Months
       },
       older: {
         startDate: startOfDay(new Date("1970-01-01")),
-        endDate: endOfDay(startOfYear(today)),
+        endDate: endOfDay(startOfYear(today).setDate(startOfYear(today).getDate() - 1)), // day before thisYear starts
       }
     };
 
@@ -284,6 +286,54 @@ export const handleGetReturnedBooksByDateRanges = async (userid) => {
 
     for (const [key, { startDate, endDate }] of Object.entries(ranges)) {
       results[key] = await findReturnedBooksByUserAndDateRange(userid, startDate, endDate);
+    }
+
+    const allEmpty = Object.values(results).every((books) => books.length === 0);
+
+    if (allEmpty) {
+      throw new ValidationError("No borrowed or due books found for the user.");
+    }
+
+    return results;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+
+export const handleGetBorrowedAndDueBooks = async (userid) => {
+  try {
+    const today = new Date();
+
+    const ranges = {
+      overdue: {
+        startDate: new Date("1970-01-01"),
+        endDate: subDays(startOfDay(today), 1),
+      },
+      today: {
+        startDate: startOfDay(today),
+        endDate: endOfDay(today),
+      },
+      next3Days: {
+        startDate: startOfDay(addDays(today, 1)),
+        endDate: endOfDay(addDays(today, 3)),
+      }
+    };
+
+    const results = {};
+
+    for (const [key, { startDate, endDate }] of Object.entries(ranges)) {
+      results[key] = await findIssuedBooksByUserDueDateRange(userid, startDate, endDate);
+    }
+
+    // Fetch books due later (after 3 days)
+    const after3Days = addDays(today, 3);
+    results.dueLater = await findIssuedBooksByUserDueDateWithTIme(userid, endOfDay(after3Days));
+
+    const allEmpty = Object.values(results).every((books) => books.length === 0);
+
+    if (allEmpty) {
+      throw new ValidationError("No borrowed or due books found for the user.");
     }
 
     return results;

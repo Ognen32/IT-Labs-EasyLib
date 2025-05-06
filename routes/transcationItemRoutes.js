@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { isAuthenticated } from "../middlewares/auth.js";
+import { isAuthenticated, isAuthorized } from "../middlewares/auth.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
-import { handlerReturnedBooksByRanges } from "../controllers/transcationItemController.js";
+import { handlerReturnedBooksByRanges, handlerBorrowedDueBooks} from "../controllers/transcationItemController.js";
 
 const router = Router();
 
 router.get("/transcation/myLibrary",isAuthenticated, handlerReturnedBooksByRanges);
+router.get("/transcation/borrowedAndDue",isAuthenticated, isAuthorized("admin"), handlerBorrowedDueBooks);
 
 export default router;
