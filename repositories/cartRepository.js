@@ -54,3 +54,18 @@ export const deleteCartItemsAll = async function (userid) {
     throw new Error(err.message);
   }
 };
+
+
+export const removeCartItem = async function (userid, bookid) {
+  try {
+    const itemFound = await Cart.destroy({
+      where: {
+        userid: userid,
+        bookid: bookid,
+      },
+    });
+    return itemFound;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};

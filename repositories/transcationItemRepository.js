@@ -1,6 +1,7 @@
 import { Op } from "sequelize"; // Import Op for Sequelize operators
 import TransactionItem from "../models/transactionItemModel.js";
 import Transaction from "../models/transcationModel.js";
+import Book from "../models/bookModel.js";
 
 export const checkExistingTransaction = async function (userid, bookid) {
   try {
@@ -34,6 +35,35 @@ export const createTranscationItem = async function (transactionid, bookid) {
       bookid: bookid,
     });
     return transactionItem;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+
+export const findReturnedBooksByUserAndDateRange = async function (userid, startDate, endDate) {
+  try {
+    const myLibrary = await TransactionItem.findAll({
+      attributes: ["id", "bookid"],
+      include: [
+        {
+          model: Book,
+          attributes: ["bookid", "title", "author", "slug", "coverArt"]
+        },
+        {
+          model: Transaction,
+          attributes: ["id","userid","returnedDate"],
+          where: {
+            userid: userid,
+            status: "returned",
+            returnedDate: {
+              [Op.between]: [startDate, endDate],
+            },
+          },
+        },
+      ],
+    });
+    return myLibrary;
   } catch (err) {
     throw new Error(err.message);
   }

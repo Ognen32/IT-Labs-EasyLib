@@ -8,6 +8,7 @@ import bookRoutes from './routes/bookRoutes.js';
 import favouriteBookRoutes from './routes/favouriteBookRoutes.js';
 import transcationRoutes from './routes/transcationRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
+import transcationItemRoutes from './routes/transcationItemRoutes.js';
 import { connectDB } from "./database/dbConnect.js";
 import bodyParser from 'body-parser';
 import './models/associations.js'; // Ќоке се користи релациони бази мора вака да се направи нов фајл кај шо ќе ги поврзи. еднаш мора да се вчиат па да се напрај relationship
@@ -28,6 +29,7 @@ app.use('/api', bookRoutes);
 app.use('/api', favouriteBookRoutes);
 app.use("/api", transcationRoutes);
 app.use("/api", cartRoutes);
+app.use("/api", transcationItemRoutes);
 
 app.use(errorMiddleware);
 

@@ -5,10 +5,12 @@ import {
   confirmTransaction,
   findAllIssuedTransactions,
   findTransactionsByPKPending,
+  findTransactionsByPKIssued
 } from "../repositories/transcationRepository.js";
 import {
   createTranscationItem,
   checkExistingTransaction,
+  findReturnedBooksByUserAndDateRange
 } from "../repositories/transcationItemRepository.js";
 import {
   findUserLimit,
@@ -20,6 +22,7 @@ import {
   findBookAvailability,
 } from "../repositories/bookRepository.js";
 import { ValidationError } from "../utils/error.js";
+import { subDays, subMonths, startOfYear, startOfDay, endOfDay} from "date-fns";
 
 export const handleBuyNow = async (userid, bookid) => {
   try {
@@ -207,6 +210,83 @@ export const handleCancelTransaction = async (transactionid) => {
     await transaction.save(); // await here is important
 
     return transaction;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const handleConfirmReturn = async (transactionid) => {
+  try {
+    if (!transactionid) {
+      throw new Error("Transaction ID is missing!");
+    }
+
+    const transaction = await findTransactionsByPKIssued(transactionid);
+
+    if (!transaction) {
+      throw new Error("Transaction not found!");
+    }
+
+    if (transaction.User) {
+      const numberOfBooks = transaction.TransactionItems?.length || 1;
+
+      await updateUserLimit(transaction.User.id, numberOfBooks);
+
+      if (transaction.TransactionItems && transaction.TransactionItems.length > 0) {
+        for (const item of transaction.TransactionItems) {
+          console.log("Updating availability for bookid:", item.bookid);
+          await updateBookAvailability(item.bookid, 1);
+        }
+      }
+    }
+    transaction.status = "returned";
+    transaction.returnedDate = new Date();
+    await transaction.save(); // await here is important
+
+    return transaction;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const handleGetReturnedBooksByDateRanges = async (userid) => {
+  try {
+    const today = new Date();
+
+    const ranges = {
+      last3Days: {
+        startDate: startOfDay(subDays(today, 2)),
+        endDate: endOfDay(today),
+      },
+      lastWeek: {
+        startDate: startOfDay(subDays(today, 6)),
+        endDate: endOfDay(subDays(today, 3)),
+      },
+      lastMonth: {
+        startDate: startOfDay(subMonths(today, 1)),
+        endDate: endOfDay(subDays(today, 7)),
+      },
+      last6Months: {
+        startDate: startOfDay(subMonths(today, 6)),
+        endDate: endOfDay(subMonths(today, 1)),
+      },
+      thisYear: {
+        startDate: startOfDay(startOfYear(today)),
+        endDate: endOfDay(subMonths(today, 6)),
+      },
+      older: {
+        startDate: startOfDay(new Date("1970-01-01")),
+        endDate: endOfDay(startOfYear(today)),
+      }
+    };
+
+    const results = {};
+
+    for (const [key, { startDate, endDate }] of Object.entries(ranges)) {
+      results[key] = await findReturnedBooksByUserAndDateRange(userid, startDate, endDate);
+    }
+
+    return results;
   } catch (err) {
     throw new Error(err.message);
   }

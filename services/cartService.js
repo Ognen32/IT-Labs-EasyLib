@@ -3,6 +3,7 @@ import {
   CartAdd,
   findCartItems,
   deleteCartItemsAll,
+  removeCartItem
 } from "../repositories/cartRepository.js";
 import { checkExistingTransaction } from "../repositories/transcationItemRepository.js";
 import {
@@ -100,6 +101,36 @@ export const handleCartSubmit = async (userid) => {
     await deleteCartItemsAll(userid);
     return transaction;
   } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+
+export const handleCartItemRemove = async (userid, bookid) => {
+  try {
+    if (!bookid) {
+      throw new ValidationError("Must Enter bookid!");
+    }
+
+    if (!userid) {
+      throw new ValidationError("Must Enter userid!");
+    }
+
+    const cartItemFound = await findCartItem(userid, bookid);
+    if (!cartItemFound) {
+      throw new ValidationError(
+        "Book is not in cart!"
+      );
+    }
+    const itemFound = await removeCartItem(userid, bookid);
+    if (itemFound === 0) {
+      throw new Error("Cart item not found.");
+    }
+
+    await updateUserLimit(userid, 1);
+    await updateBookAvailability(bookid, 1);
+    return cartItemFound;
+  } catch(err) {
     throw new Error(err.message);
   }
 };

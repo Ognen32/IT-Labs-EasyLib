@@ -1,4 +1,4 @@
-import {handleCartAdd, handlegetCartItems, handleCartSubmit} from '../services/cartService.js';
+import {handleCartAdd, handlegetCartItems, handleCartSubmit, handleCartItemRemove} from '../services/cartService.js';
 
 
 export const handlerCartAdd = async (req, res) => {
@@ -34,3 +34,14 @@ export const handlerCartSubmit = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+export const handlerCartItemRemove = async (req,res) => {
+    try {
+        const userid = req.user.id;
+        const bookid = req.body.bookid;
+        const itemRemove = await handleCartItemRemove(userid, bookid);
+        res.status(200).json({message: "Item Removed",itemRemove});
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}

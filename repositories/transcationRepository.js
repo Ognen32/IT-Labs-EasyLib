@@ -158,3 +158,28 @@ export const findTransactionsByPKPending = async function (transactionid) {
     throw new Error(err.message);
   }
 };
+
+export const findTransactionsByPKIssued = async function (transactionid) {
+  try {
+    const transaction = await Transcation.findOne({
+      where: {
+        id: transactionid,
+        status: "issued"
+      },
+      include: [
+        {
+          model: TranscationItem,
+          attributes: ["id", "bookid"],
+        },
+        {
+          model: User,
+          attributes: ["id", "limit"],
+        }
+      ]
+    });
+
+    return transaction;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
