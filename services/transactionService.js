@@ -291,7 +291,7 @@ export const handleGetReturnedBooksByDateRanges = async (userid) => {
     const allEmpty = Object.values(results).every((books) => books.length === 0);
 
     if (allEmpty) {
-      throw new ValidationError("No borrowed or due books found for the user.");
+      throw new ValidationError("No returned books found for the user.");
     }
 
     return results;
