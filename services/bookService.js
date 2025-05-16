@@ -9,7 +9,8 @@ import {
   findBooksSearchLandingPage,
   findBooksBySearchOnly,
   findBooksByGenresOnly,
-  findBooksBySearchAndGenres
+  findBooksBySearchAndGenres,
+  findBooksSearchWithGenre,
 } from "../repositories/bookRepository.js";
 import { findByName } from "../repositories/genreRepository.js";
 import {
@@ -50,15 +51,75 @@ export const getBookById = async (bookid) => {
   }
 };
 
-export const getBooks = async (search) => {
+export const getBooks = async (search, genres, pageNum) => {
   try {
     if (!search) {
       throw new Error("Enter Search for testing ATM");
     }
-    const books = await findBooksSearch(search);
-    if (!books || books.length === 0) {
-      throw new Error("Book does not exist. Enter Again.");
+    console.log(pageNum);
+    if (!genres) {
+      genres = []; // If no genres provided, set it to an empty array
+    } else if (!Array.isArray(genres)) {
+      genres = [genres]; // Convert single genre string to an array
     }
+    console.log(genres);
+    const limit = 2;
+
+    if (
+      search &&
+      search.trim() !== "" &&
+      genres &&
+      genres.length > 0 &&
+      pageNum
+    ) {
+      const books = await findBooksSearchWithGenre(
+        search,
+        limit,
+        pageNum,
+        genres
+      );
+      const filteredBooks = books.filter((book) => {
+        const bookGenres = book.Genres.map((g) => g.name);
+        return genres.every((g) => bookGenres.includes(g));
+      });
+
+      if (!filteredBooks || filteredBooks.length === 0) {
+        throw new Error("No books found with the given search and genres.");
+      }
+
+      return filteredBooks;
+    }
+
+    if (search && genres.length > 0 && !pageNum) {
+      const books = await findBooksSearchWithGenre(search, limit, 1, genres); // default to page 1
+      const filteredBooks = books.filter((book) => {
+        const bookGenres = book.Genres.map((g) => g.name);
+        return genres.every((g) => bookGenres.includes(g));
+      });
+
+      if (!filteredBooks || filteredBooks.length === 0) {
+        throw new Error("No books found with the given search and genres.");
+      }
+
+      return filteredBooks;
+    }
+
+    if (search && genres.length === 0 && pageNum) {
+      const books = await findBooksSearch(search, limit, pageNum);
+
+      if (!books || books.length === 0) {
+        throw new Error("No books found with the given search.");
+      }
+
+      return books;
+    }
+
+    // Default fallback (search only)
+    const books = await findBooksSearch(search, limit, 1); // default to page 1
+    if (!books || books.length === 0) {
+      throw new Error("No books found with the given search.");
+    }
+
     return books;
   } catch (err) {
     throw new Error(err.message);
@@ -167,7 +228,9 @@ export const updateBook = async (bookid, bookData, genres, genresOld) => {
     }
 
     if (genresOld && genresOld.length > 0) {
-      const genresToRemove = book.Genres.filter((g) => genresOld.includes(g.name));
+      const genresToRemove = book.Genres.filter((g) =>
+        genresOld.includes(g.name)
+      );
       for (let genre of genresToRemove) {
         await deleteBookGenreInstanceByIdANDTitle(bookid, genre.genreId);
       }

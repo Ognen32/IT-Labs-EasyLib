@@ -47,7 +47,7 @@ export const findBookBySlug = async function (slug) {
   }
 };
 
-export const findBooksSearch = async function (search) {
+export const findBooksSearch = async function (search, limit, pageNum, ) {
   try {
     const books = await Book.findAll({
       attributes: ["bookid", "title", "author", "coverArt"],
@@ -57,6 +57,39 @@ export const findBooksSearch = async function (search) {
         },
       },
       order: [["title", "ASC"]],
+      limit:limit,
+      offset: (pageNum - 1) * limit
+    });
+    return books;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findBooksSearchWithGenre = async function (search, limit, pageNum, genres) {
+  try {
+    const books = await Book.findAll({
+      attributes: ["bookid", "title", "author", "coverArt"],
+      where: {
+        title: {
+          [Op.iLike]: `%${search}%`,
+        },
+      },
+      order: [["title", "ASC"]],
+      limit:limit,
+      offset: (pageNum - 1) * limit,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          where: {
+            name: {
+              [Op.in]: genres,
+            },
+          },
+          through: { attributes: [] },
+        },
+      ],
     });
     return books;
   } catch (err) {
@@ -229,6 +262,29 @@ export const findBooksBySearchAndGenres = async function (search, genres) {
       ],
     });
     return books;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const updateBookAvailability = async function (bookid, num) {
+  try {
+    const [updatedRows] = await Book.increment("availability", {
+      by: num,
+      where: { bookid: bookid },
+    });
+    return updatedRows;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findBookAvailability = async function (bookid) {
+  try {
+    const book = await Book.findOne({ where:{
+      bookid:bookid
+    }});
+    return book;
   } catch (err) {
     throw new Error(err.message);
   }

@@ -41,8 +41,10 @@ export const handleCreateBook = async (req, res) => {
 
 export const handlerGetAllBooks = async (req, res) => {
   try {
-    const search = req.query.search;
-    const books = await getBooks(search);
+    const search = req.query.search || req.body.search;
+    const genres = req.query.genre;
+    const pageNum = req.query.pageNum || req.body.pageNum;
+    const books = await getBooks(search, genres, pageNum);
     res.status(200).json(books);
   } catch (err) {
     res.status(500).json({ error: err.message });
