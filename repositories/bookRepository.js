@@ -110,6 +110,7 @@ export const create = async function (bookData) {
       slug: bookData.slug,
       mainCover: bookData.mainCover,
       coverArt: bookData.coverArt,
+      rating: bookData.rating
     });
     return book;
   } catch (err) {
@@ -165,6 +166,27 @@ export const update = async function (bookid, bookData) {
 };
 
 export const findBooksSearchLandingPage = async function () {
+  try {
+    const books = await Book.findAll({
+      attributes: ["bookid", "title", "author", "coverArt", "totalBorrowCount"],
+      order: [["totalBorrowCount", "DESC"]],
+      limit: 12,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
+    return books;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const findBooksSearchLandingPageCatalog = async function () {
+  // Ова само се користи за Landing Page дека го имаме лимитирано на 10
   try {
     const books = await Book.findAll({
       attributes: ["bookid", "title", "author", "coverArt"],

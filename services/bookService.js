@@ -11,6 +11,7 @@ import {
   findBooksByGenresOnly,
   findBooksBySearchAndGenres,
   findBooksSearchWithGenre,
+  findBooksSearchLandingPageCatalog
 } from "../repositories/bookRepository.js";
 import { findByName } from "../repositories/genreRepository.js";
 import {
@@ -165,7 +166,7 @@ export const createBook = async (bookData, genres, covers) => {
     }
 
     bookData.slug = slugify(bookData.title, { lower: true });
-    bookData.mainCover = mainCoverResult.public_id;
+    bookData.mainCover = mainCoverResult.url;
     bookData.coverArt = coverArtResult.url;
     const book = await create(bookData);
 
@@ -307,7 +308,7 @@ export const getFilteredLandingBooks = async (search, genres) => {
 
       return books;
     } else {
-      const books_search = await findBooksSearchLandingPage();
+      const books_search = await findBooksSearchLandingPageCatalog();
       return books_search;
     }
   } catch (err) {

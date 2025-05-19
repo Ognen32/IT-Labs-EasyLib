@@ -1,9 +1,10 @@
-import { findUserByUserName, findUserByEmail, findUserByPhoneNumber, createUser, findUserByResetPasswordToken, updateUserPassword } from '../repositories/authRepository.js';
+import { findUserByUserName, findUserByEmail, findUserByPhoneNumber, createUser, findUserByResetPasswordToken, updateUserPassword, findUserById } from '../repositories/authRepository.js';
 import { sendToken } from '../utils/jwtToken.js';
 import { ErrorHandler } from '../middlewares/error.js';
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { sendEmail } from '../utils/sendEmail.js';
+import { ValidationError } from "../utils/error.js";
 
 export const registerUserService = async (req, res, next) => {
   try {
@@ -150,3 +151,18 @@ export const resetPasswordService = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getUserByIDHeader = async (userid) => {
+  try {
+    if (!userid) {
+      throw new ValidationError("Must Enter userid!");
+    }
+    const user = await findUserById(userid);
+    if (!user) {
+      throw new ValidationError("User has not been found!");
+    }
+    return user;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}

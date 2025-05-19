@@ -102,6 +102,25 @@ const Book = sequelize.define("Book", {
     coverArt: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    rating: {
+        type: DataTypes.DOUBLE,
+        allowNull:true,
+        validate: {
+            min: {
+                args: [0],
+                msg: "Rating cannot be below 0."
+            },
+            max: {
+                args: [5],
+                msg: "Rating cannot be above 5."
+              }
+        }
+    },
+    totalBorrowCount: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 0
     }
 }, 
 {
