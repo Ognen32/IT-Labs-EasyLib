@@ -11,7 +11,8 @@ import {
   findBooksByGenresOnly,
   findBooksBySearchAndGenres,
   findBooksSearchWithGenre,
-  findBooksSearchLandingPageCatalog
+  findBooksSearchLandingPageCatalog,
+  findBooksLatestAdded
 } from "../repositories/bookRepository.js";
 import { findByName } from "../repositories/genreRepository.js";
 import {
@@ -64,7 +65,7 @@ export const getBooks = async (search, genres, pageNum) => {
       genres = [genres]; // Convert single genre string to an array
     }
     console.log(genres);
-    const limit = 2;
+    const limit = 12;
 
     if (
       search &&
@@ -252,8 +253,22 @@ export const updateBook = async (bookid, bookData, genres, genresOld) => {
   }
 };
 
+// Tuka
+
+export const getLatestBooks = async () => {
+  try{
+    const latestBooks = await findBooksLatestAdded();
+    console.log(latestBooks);
+    if (!latestBooks || latestBooks.length === 0) {
+      throw new Error("No books found");
+    }
+    return latestBooks;
+  } catch (err) {
+    throw new Error("No books found");
+  }
+};
+
 export const landingPageData = async () => {
-  // Трендинг уште не е тука несме готови
   try {
     const books_search = await findBooksSearchLandingPage();
     if (!books_search || books_search.length === 0) {

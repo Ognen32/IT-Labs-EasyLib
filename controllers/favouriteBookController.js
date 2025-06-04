@@ -1,15 +1,30 @@
 import {
-  addFavouriteBook,
+  toggleFavouriteBook,
   getFavouriteBooks,
   getSortedFavourites,
+  checkFavouriteBook
 } from "../services/favouriteBookService.js";
 
-export const handleAddFavouriteBook = async (req, res) => {
+
+export const handleCheckFavouriteBook = async (req, res) => {
+  try {
+    const userid = req.user.id;
+    const { bookid } = req.body;
+
+    const isFavourite = await checkFavouriteBook(userid, bookid);
+
+    res.status(200).json({ exists: isFavourite });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+export const handletoggleFavouriteBook = async (req, res) => {
   const userid = req.body.userid;
   const bookid = req.body.bookid;
   const token_data = req.user;
 
-  const favourite = await addFavouriteBook(req.user.id, bookid);
+  const favourite = await toggleFavouriteBook(req.user.id, bookid);
 
   res.status(201).json(favourite);
 };

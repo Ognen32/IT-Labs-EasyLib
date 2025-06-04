@@ -12,5 +12,8 @@ router.get('/logout', logoutUser); // Works
 router.post('/forgotpassword', forgotPassword);
 router.post('/resetpassword/:token', resetPassword);
 router.get('/userInfo', isAuthenticated, hanldeGetUserByIDHeader);
+router.get('/isAuth', isAuthenticated, (req, res) => {
+    res.status(200).json({ authenticated: true, user: req.user });
+  });
 
 export default router;

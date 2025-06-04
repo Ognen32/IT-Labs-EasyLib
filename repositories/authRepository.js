@@ -5,7 +5,7 @@ const commonAttributes = ['id', 'userName', 'email', 'phoneNumber', 'firstName',
 export const findUserById = async  function (userid) {
   try {
     return await User.findOne({where: {id: userid},
-    attributes: ["id", "firstName", "surName", "userName", "avatar", "limit", "issueDate", "expirationDate" ]
+    attributes: ["id", "firstName", "surName", "userName", "avatar", "limit", "issueDate", "expirationDate", "role" ]
   })
   } catch (err) {
     throw new Error(err.message);

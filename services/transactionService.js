@@ -22,6 +22,7 @@ import { findCartItem } from "../repositories/cartRepository.js";
 import {
   updateBookAvailability,
   findBookAvailability,
+  incrementTotalBorrowed
 } from "../repositories/bookRepository.js";
 import { ValidationError } from "../utils/error.js";
 import { subDays, subMonths, startOfYear, startOfDay, endOfDay, addDays, } from "date-fns";
@@ -155,8 +156,8 @@ export const handleConfirmTransaction = async (transactionid) => {
 export const getIssuedTransactions = async () => {
   try {
     const issuedTransactions = await findAllIssuedTransactions();
-    if (!issuedTransactions || issuedTransactions.length <= 0) {
-      throw new ValidationError("No issued books found!");
+    if (!issuedTransactions || issuedTransactions.length === 0) {
+      return []; // ✅ Just return an empty array
     }
 
     for (const transaction of issuedTransactions) {
@@ -238,6 +239,7 @@ export const handleConfirmReturn = async (transactionid) => {
         for (const item of transaction.TransactionItems) {
           console.log("Updating availability for bookid:", item.bookid);
           await updateBookAvailability(item.bookid, 1);
+          await incrementTotalBorrowed(item.bookid, 1);
         }
       }
     }
@@ -291,7 +293,7 @@ export const handleGetReturnedBooksByDateRanges = async (userid) => {
     const allEmpty = Object.values(results).every((books) => books.length === 0);
 
     if (allEmpty) {
-      throw new ValidationError("No returned books found for the user.");
+      return {};
     }
 
     return results;
@@ -333,11 +335,33 @@ export const handleGetBorrowedAndDueBooks = async (userid) => {
     const allEmpty = Object.values(results).every((books) => books.length === 0);
 
     if (allEmpty) {
-      throw new ValidationError("No borrowed or due books found for the user.");
+      return {}
     }
 
     return results;
   } catch (err) {
     throw new Error(err.message);
+  }
+};
+
+export const checkUserBookStatus = async (userid, bookid) => {
+  try {
+    if (!bookid) {
+      return "Invalid book ID";
+    }
+
+    const existingTransactionItem = await checkExistingTransaction(userid, bookid);
+    if (existingTransactionItem) {
+      return "Active transaction with this book.";
+    }
+
+    const cartItem = await findCartItem(userid, bookid);
+    if (cartItem) {
+      return "This book is already in your cart.";
+    }
+
+    return null; // no issues
+  } catch (err) {
+    return "Something went wrong while checking book status.";
   }
 };

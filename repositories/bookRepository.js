@@ -50,7 +50,7 @@ export const findBookBySlug = async function (slug) {
 export const findBooksSearch = async function (search, limit, pageNum, ) {
   try {
     const books = await Book.findAll({
-      attributes: ["bookid", "title", "author", "coverArt"],
+      attributes: ["bookid", "title", "author", "coverArt", "totalBorrowCount", "rating", "slug", "releaseDate", "createdAt"],
       where: {
         title: {
           [Op.iLike]: `%${search}%`,
@@ -58,7 +58,14 @@ export const findBooksSearch = async function (search, limit, pageNum, ) {
       },
       order: [["title", "ASC"]],
       limit:limit,
-      offset: (pageNum - 1) * limit
+      offset: (pageNum - 1) * limit,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          through: { attributes: [] },
+        },
+      ],
     });
     return books;
   } catch (err) {
@@ -69,7 +76,7 @@ export const findBooksSearch = async function (search, limit, pageNum, ) {
 export const findBooksSearchWithGenre = async function (search, limit, pageNum, genres) {
   try {
     const books = await Book.findAll({
-      attributes: ["bookid", "title", "author", "coverArt"],
+      attributes: ["bookid", "title", "author", "coverArt", "totalBorrowCount", "rating", "slug", "releaseDate", "createdAt"],
       where: {
         title: {
           [Op.iLike]: `%${search}%`,
@@ -165,10 +172,30 @@ export const update = async function (bookid, bookData) {
   }
 };
 
+export const findBooksLatestAdded = async function () {
+  try {
+    const books = await Book.findAll({
+      attributes: ["bookid", "title", "author", "coverArt", "totalBorrowCount", "rating", "slug", "releaseDate", "createdAt"],
+      order: [["createdAt", "DESC"]],
+      limit: 12,
+      include: [
+        {
+          model: Genre,
+          attributes: ["genreId", "name"],
+          through: { attributes: [] },
+        },
+      ],
+    });
+    return books;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
 export const findBooksSearchLandingPage = async function () {
   try {
     const books = await Book.findAll({
-      attributes: ["bookid", "title", "author", "coverArt", "totalBorrowCount"],
+      attributes: ["bookid", "title", "author", "coverArt", "totalBorrowCount", "rating", "slug", "releaseDate"],
       order: [["totalBorrowCount", "DESC"]],
       limit: 12,
       include: [
@@ -292,6 +319,18 @@ export const findBooksBySearchAndGenres = async function (search, genres) {
 export const updateBookAvailability = async function (bookid, num) {
   try {
     const [updatedRows] = await Book.increment("availability", {
+      by: num,
+      where: { bookid: bookid },
+    });
+    return updatedRows;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
+export const incrementTotalBorrowed = async function (bookid, num) {
+  try {
+    const [updatedRows] = await Book.increment("totalBorrowCount", {
       by: num,
       where: { bookid: bookid },
     });

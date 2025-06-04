@@ -1,4 +1,6 @@
 import Favourite from "../models/favouriteModel.js";
+import Book from '../models/bookModel.js';
+import Genre from "../models/genresModel.js";
 import { Op } from "sequelize";
 
 export const createFavourite = async function (userid, bookid) {
@@ -12,6 +14,21 @@ export const createFavourite = async function (userid, bookid) {
     throw new Error(err.message);
   }
 };
+
+export const deleteFavourite = async function (userid, bookid) {
+  try {
+    const deleted = await Favourite.destroy({
+      where: {
+        userid: userid,
+        bookid: bookid,
+      },
+    });
+    return deleted;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
+
 
 export const findFavourite = async function (userid, bookid) {
   try {
@@ -30,9 +47,22 @@ export const findFavourite = async function (userid, bookid) {
 export const findFavourites = async function (userid) {
   try {
     const favourites = await Favourite.findAll({
+      order: [["createdAt", "DESC"]],
       where: {
         userid: userid,
       },
+      include: [
+        {
+          model: Book,
+          attributes:["title", "author", "coverArt", "releaseDate", "slug", "rating"],
+          include: [
+            {
+              model: Genre,
+              attributes: ["genreId", "name" ]
+            },
+          ],
+        },
+      ],
     });
     return favourites;
   } catch (err) {

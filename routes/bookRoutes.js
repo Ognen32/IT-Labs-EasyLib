@@ -8,6 +8,7 @@ import {
   handleGetBookBySlug,
   getLandingPageHandler,
   getFilteredLandingBooksHandler,
+  getLatestBooksHanlder,
 } from "../controllers/bookController.js";
 import {
   handleCreateGenre,
@@ -16,6 +17,7 @@ import {
 import { uploadAvatar, uploadTwoCovers } from "../middlewares/multer.js";
 import cloudinary from "../config/cloudinary.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
+import { isAuthenticated, isAuthorized } from "../middlewares/auth.js";
 
 const router = Router();
 
@@ -26,9 +28,10 @@ router.get("/books", handlerGetAllBooks); // Works needs to be updated for searc
 router.get("/book/:slug", handleGetBookBySlug); // Works
 router.get("/bookot/:bookid", handleGetBookById); // Works
 router.patch("/book/:id", handleUpdateBook); // Works But if it required we can add some small layer of validaton with the genres but it will not be required for now.
-router.post("/book", uploadTwoCovers, handleCreateBook); //Works perfectly but the front-end must add some validation before posting
+router.post("/book", isAuthenticated, isAuthorized("admin"),  uploadTwoCovers, handleCreateBook); //Works perfectly but the front-end must add some validation before posting
 router.delete("/books/:bookid", handleRemoveBook); // Works
-router.post("/books/test/avatars", uploadAvatar, async (req, res) => { // Testing
+router.post("/books/test/avatars", uploadAvatar, async (req, res) => {
+  // Testing
   try {
     const file = req.file;
     const dataUri = `data:${file.mimetype};base64,${file.buffer.toString(
@@ -48,5 +51,6 @@ router.post("/books/test/avatars", uploadAvatar, async (req, res) => { // Testin
 });
 router.get("/landingPage", getLandingPageHandler); // Works
 router.post("/landingPage/search", getFilteredLandingBooksHandler); // Works as indendent
+router.get("/latestBooks", getLatestBooksHanlder);
 
 export default router;
