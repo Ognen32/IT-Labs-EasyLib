@@ -11,6 +11,8 @@ import {
   findBooksByGenresOnly,
   findBooksBySearchAndGenres,
   findBooksSearchWithGenre,
+  findBooksSearchLandingPageCatalog,
+  findBooksLatestAdded
 } from "../repositories/bookRepository.js";
 import { findByName } from "../repositories/genreRepository.js";
 import {
@@ -63,7 +65,7 @@ export const getBooks = async (search, genres, pageNum) => {
       genres = [genres]; // Convert single genre string to an array
     }
     console.log(genres);
-    const limit = 2;
+    const limit = 12;
 
     if (
       search &&
@@ -165,7 +167,7 @@ export const createBook = async (bookData, genres, covers) => {
     }
 
     bookData.slug = slugify(bookData.title, { lower: true });
-    bookData.mainCover = mainCoverResult.public_id;
+    bookData.mainCover = mainCoverResult.url;
     bookData.coverArt = coverArtResult.url;
     const book = await create(bookData);
 
@@ -251,8 +253,22 @@ export const updateBook = async (bookid, bookData, genres, genresOld) => {
   }
 };
 
+// Tuka
+
+export const getLatestBooks = async () => {
+  try{
+    const latestBooks = await findBooksLatestAdded();
+    console.log(latestBooks);
+    if (!latestBooks || latestBooks.length === 0) {
+      throw new Error("No books found");
+    }
+    return latestBooks;
+  } catch (err) {
+    throw new Error("No books found");
+  }
+};
+
 export const landingPageData = async () => {
-  // Трендинг уште не е тука несме готови
   try {
     const books_search = await findBooksSearchLandingPage();
     if (!books_search || books_search.length === 0) {
@@ -307,7 +323,7 @@ export const getFilteredLandingBooks = async (search, genres) => {
 
       return books;
     } else {
-      const books_search = await findBooksSearchLandingPage();
+      const books_search = await findBooksSearchLandingPageCatalog();
       return books_search;
     }
   } catch (err) {

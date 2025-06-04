@@ -6,6 +6,6 @@ import { handlerReturnedBooksByRanges, handlerBorrowedDueBooks} from "../control
 const router = Router();
 
 router.get("/transcation/myLibrary",isAuthenticated, handlerReturnedBooksByRanges);
-router.get("/transcation/borrowedAndDue",isAuthenticated, isAuthorized("admin"), handlerBorrowedDueBooks);
+router.get("/transcation/borrowedAndDue",isAuthenticated, handlerBorrowedDueBooks);
 
 export default router;

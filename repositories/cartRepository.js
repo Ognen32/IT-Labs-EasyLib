@@ -1,5 +1,6 @@
 import Cart from "../models/cartModel.js";
 import Book from '../models/bookModel.js';
+import Genre from '../models/genresModel.js';
 
 export const CartAdd = async function (userid, bookid) {
   try {
@@ -33,10 +34,19 @@ export const findCartItems = async function (userid) {
       where: {
         userid: userid,
       },
-      include:{
+      include: [
+      {
         model: Book,
-        attributes: ["bookid", "title", "author", "coverArt"],
-      }
+        attributes: ["bookid", "title", "author", "coverArt", "mainCover"],
+        include: [
+          {
+            model: Genre,
+            attributes: ["genreId", "name"],
+          },
+        ],
+      },
+      
+    ]
     });
     return items;
   } catch (err) {

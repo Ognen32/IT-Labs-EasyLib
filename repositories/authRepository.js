@@ -2,6 +2,16 @@ import User from '../models/userModel.js';
 // Defining the attributes from the userModel
 const commonAttributes = ['id', 'userName', 'email', 'phoneNumber', 'firstName', 'surName', 'password', 'role', 'dateOfBirth', 'city', 'address'];
 
+export const findUserById = async  function (userid) {
+  try {
+    return await User.findOne({where: {id: userid},
+    attributes: ["id", "firstName", "surName", "userName", "avatar", "limit", "issueDate", "expirationDate", "role" ]
+  })
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}; 
+
 export const findUserByUserName = async (userName) => {
   try {
     return await User.findOne({ where: { userName } }); // Checks if the username already exists

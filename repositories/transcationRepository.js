@@ -42,7 +42,7 @@ export const findAllActivePendingTransactions = async (now) => {
         },
         {
           model: User,
-          attributes: ["id", "userName"],
+          attributes: ["id", "userName", "avatar"],
         },
       ],
       order: [["expirationDate", "ASC"]],
@@ -121,7 +121,7 @@ export const findAllIssuedTransactions = async () => {
         },
         {
           model: User,
-          attributes: ["id", "userName", "email", "phoneNumber", "city", "address"  ],
+          attributes: ["id", "userName", "email", "phoneNumber", "city", "address", "avatar", "firstName", "surName"  ],
         },
       ],
       order: [["borrowedDate", "ASC"]],
@@ -148,7 +148,7 @@ export const findTransactionsByPKPending = async function (transactionid) {
         },
         {
           model: User,
-          attributes: ["id", "limit"],
+          attributes: ["id", "limit", ],
         }
       ]
     });

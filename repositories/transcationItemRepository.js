@@ -2,6 +2,7 @@ import { Op } from "sequelize"; // Import Op for Sequelize operators
 import TransactionItem from "../models/transactionItemModel.js";
 import Transaction from "../models/transcationModel.js";
 import Book from "../models/bookModel.js";
+import Genre from '../models/genresModel.js';
 
 export const checkExistingTransaction = async function (userid, bookid) {
   try {
@@ -48,7 +49,13 @@ export const findReturnedBooksByUserAndDateRange = async function (userid, start
       include: [
         {
           model: Book,
-          attributes: ["bookid", "title", "author", "slug", "coverArt"]
+          attributes: ["bookid", "title", "author", "slug", "coverArt", "slug", "releaseDate", "rating"],
+          include: [
+            {
+              model: Genre,
+              attributes: ["genreId", "name"]
+            }
+          ]
         },
         {
           model: Transaction,
@@ -76,7 +83,13 @@ export const findIssuedBooksByUserDueDateRange = async (userid, startDate, endDa
       include: [
         {
           model: Book,
-          attributes: ["bookid", "title", "author", "slug", "coverArt"]
+          attributes: ["bookid", "title", "author", "slug", "coverArt", "slug", "releaseDate", "rating"],
+          include: [
+            {
+              model: Genre,
+              attributes: ["genreId", "name"]
+            }
+          ]
         },
         {
           model: Transaction,
@@ -104,7 +117,13 @@ export const findIssuedBooksByUserDueDateWithTIme= async (userid, date) => {
       include: [
         {
           model: Book,
-          attributes: ["bookid", "title", "author", "slug", "coverArt"]
+          attributes: ["bookid", "title", "author", "slug", "coverArt", "slug", "releaseDate", "rating"],
+          include: [
+            {
+              model: Genre,
+              attributes: ["genreId", "name"]
+            }
+          ],
         },
         {
           model: Transaction,

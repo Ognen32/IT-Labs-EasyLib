@@ -5,6 +5,7 @@ import {
   registerUserService,
   loginUserService,
   logoutUserService,
+  getUserByIDHeader
 } from "../services/authService.js";
 
 // Used for handling up the services's API request & response logic
@@ -49,3 +50,15 @@ export const resetPassword = catchAsyncError(async (req, res, next) => {
   const { password } = req.body; // requests the password
   await resetPasswordService(req, res, next);
 });
+
+
+export const hanldeGetUserByIDHeader = async (req, res) => {
+  try {
+     const userid = req.user.id;
+    // const useridtemp = 2;
+    const user = await getUserByIDHeader(userid);
+    res.status(200).json(user);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+}

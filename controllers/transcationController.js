@@ -5,6 +5,7 @@ import {
   getIssuedTransactions,
   handleCancelTransaction,
   handleConfirmReturn,
+  checkUserBookStatus
 } from "../services/transactionService.js";
 
 export const handlerBuyNow = async (req, res) => {
@@ -65,5 +66,23 @@ export const handlerConfirmReturn = async (req, res) => {
     res.status(200).json(transaction);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+};
+
+
+export const handleCheckBookStatus = async (req, res) => {
+  try {
+    const bookid = req.body.bookid;
+    const userid = req.user.id;
+
+    const message = await checkUserBookStatus(userid, bookid);
+
+    if (message) {
+      return res.status(200).json({ allowed: false, message });
+    }
+
+    return res.status(200).json({ allowed: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Server error" });
   }
 };

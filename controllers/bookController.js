@@ -6,7 +6,8 @@ import {
   getBookById,
   updateBook,
   landingPageData,
-  getFilteredLandingBooks
+  getFilteredLandingBooks,
+  getLatestBooks,
 } from "../services/bookService.js";
 
 export const handleCreateBook = async (req, res) => {
@@ -19,6 +20,7 @@ export const handleCreateBook = async (req, res) => {
       description,
       shortDescription,
       availability,
+      rating,
     } = req.body;
     const genres = req.body.genre;
     const covers = req.files;
@@ -30,6 +32,7 @@ export const handleCreateBook = async (req, res) => {
       description: description,
       shortDescription: shortDescription,
       availability: availability,
+      rating,
     };
     const book = await createBook(bookData, genres, covers);
     return res.status(201).json(book);
@@ -47,7 +50,7 @@ export const handlerGetAllBooks = async (req, res) => {
     const books = await getBooks(search, genres, pageNum);
     res.status(200).json(books);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(404).json({ error: err.message });
   }
 };
 
@@ -119,19 +122,27 @@ export const handleUpdateBook = async (req, res) => {
       oldGenres
     );
     return res.status(200).json(updatedBook);
-
   } catch (err) {
     console.error(err.message);
     return res.status(500).json({ error: err.message });
+  }
+};
+// Tuka
+export const getLatestBooksHanlder = async (req, res) => {
+  try {
+    const data = await getLatestBooks();
+    res.status(200).json(data);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
 
 export const getLandingPageHandler = async (req, res) => {
   try {
     const data = await landingPageData();
-    res.status(200).json({ data });
+    res.status(200).json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 };
 
@@ -142,6 +153,6 @@ export const getFilteredLandingBooksHandler = async (req, res) => {
     const data = await getFilteredLandingBooks(search, genres);
     res.status(200).json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 };

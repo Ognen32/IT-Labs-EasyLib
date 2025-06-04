@@ -17,7 +17,11 @@ dotenv.config({ path: './config/config.env' });
 
 const app = express();
 
-app.use(cors()); // For cross origin requests
+// app.use(cors()); // For cross origin requests
+app.use(cors({
+    origin: 'http://localhost:5173', // e.g., http://localhost:5173 for Vite
+    credentials: true
+  }));
 app.use(express.json()); // For parsing incoming json requests
 app.use(cookieParser()); // For parsing cookies incoming json requests
 app.use(express.urlencoded({ extended: true })); // For parsing url encoded data

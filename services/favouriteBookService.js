@@ -4,32 +4,41 @@ import {
   findFavourites,
   sortFavouritesbyDate,
   sortFavouritesbyDateRange,
+  deleteFavourite
 } from "../repositories/favouriteBookRepository.js";
 import { ValidationError } from "../utils/error.js";
 
-export const addFavouriteBook = async (userid, bookid) => {
+
+export const checkFavouriteBook = async (userid, bookid) => {
+  if (!userid || !bookid) {
+    throw new ValidationError("User ID and Book ID are required.");
+  }
+
+  const favourite = await findFavourite(userid, bookid);
+  return !!favourite; // returns true or false
+};
+
+export const toggleFavouriteBook = async (userid, bookid) => {
   if (!userid || !bookid)
     throw new ValidationError("Must Enter both userId and bookId");
 
-  const foundedFavourite = await findFavourite(userid, bookid);
+  const existingFavourite = await findFavourite(userid, bookid);
 
-  if (foundedFavourite)
-    throw new ValidationError("This Instance already exist!");
+  if (existingFavourite) {
+    await deleteFavourite(userid, bookid);
+    return { status: "removed", message: "Book removed from favourites" };
+  }
 
   const createdFavourite = await createFavourite(userid, bookid);
-  return createdFavourite;
+  return { status: "added", message: "Book added to favourites", data: createdFavourite };
 };
 
 export const getFavouriteBooks = async (userid) => {
-  if (!userid) throw new ValidationError("Must Enter userid!");
+  if (!userid) throw new ValidationError("Must enter userid!");
 
   const favourites = await findFavourites(userid);
 
-  if (favourites.length === 0)
-    throw new ValidationError("No favourites found for this user.");
-  {
-    return favourites;
-  }
+  return favourites || []; // Return empty array if null or undefined (extra safe)
 };
 
 export const getSortedFavourites = async (userid) => {
